@@ -27,6 +27,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     /// Configure migrations
     var migrations = MigrationConfig()
     migrations.add(migration: Item.self, database: .mysql)
+    migrations.add(migration: Order.self, database: .mysql)
     services.register(migrations)
 
 }
