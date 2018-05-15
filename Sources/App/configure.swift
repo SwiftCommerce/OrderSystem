@@ -1,9 +1,10 @@
-import Fluent
+import FluentMySQL
 import Vapor
 
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
     /// Register providers first
+    try services.register(FluentMySQLProvider())
 
     /// Register routes to the router
     let router = EngineRouter.default()
@@ -16,8 +17,11 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     services.register(middlewares)
 
 
-    /// Register the configured SQLite database to the database config.
+    /// Register the configured MySQL database to the database config.
+    let mysqlConfig = MySQLDatabaseConfig(hostname: "localhost", port: 3306, username: "root", password: "password", database: "order_system")
+    
     var databases = DatabasesConfig()
+    databases.add(database: MySQLDatabase(config: mysqlConfig), as: .mysql)
     services.register(databases)
 
     /// Configure migrations
