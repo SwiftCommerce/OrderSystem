@@ -22,8 +22,4 @@ final class Item: Codable, Content, MySQLModel, Migration {
         self.price = try container.decode(Int.self, forKey: .price)
         self.quantity = try container.decode(Int.self, forKey: .quantity)
     }
-    
-    enum CodingKeys: String, CodingKey {
-        case id, orderID, sku, price, quantity
-    }
 }
