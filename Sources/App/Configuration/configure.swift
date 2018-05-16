@@ -23,7 +23,13 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 
 
     /// Register the configured MySQL database to the database config.
-    let mysqlConfig = MySQLDatabaseConfig(hostname: "localhost", port: 3306, username: "root", password: "password", database: "order_system")
+    let mysqlConfig = MySQLDatabaseConfig.init(
+        hostname: Environment.get("DATABASE_HOSTNAME") ?? "localhost",
+        port: 3306,
+        username: Environment.get("DATABASE_USER") ?? "root",
+        password: Environment.get("DATABASE_PASSWORD") ?? "password",
+        database:  Environment.get("DATABASE_DB") ?? "order_system"
+    )
     
     var databases = DatabasesConfig()
     databases.add(database: MySQLDatabase(config: mysqlConfig), as: .mysql)
