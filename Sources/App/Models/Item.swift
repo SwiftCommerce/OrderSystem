@@ -22,6 +22,13 @@ final class Item: Content, MySQLModel, Migration {
         self.price = try container.decode(Int.self, forKey: .price)
         self.quantity = try container.decode(Int.self, forKey: .quantity)
     }
+    
+    public static func prepare(on connection: MySQLConnection) -> Future<Void> {
+        return Database.create(self, on: connection) { builder in
+            try addProperties(to: builder)
+            try builder.addReference(from: \.orderID, to: \Order.id)
+        }
+    }
 }
 
 extension Item {
