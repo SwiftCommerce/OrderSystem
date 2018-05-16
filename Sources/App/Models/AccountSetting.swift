@@ -8,6 +8,12 @@ final class AccountSetting: Content, MySQLModel, Migration, Parameter {
     let name: String
     var value: String
     
+    init(account: Account.ID, name: String, value: String) {
+        self.accountID = account
+        self.name = name
+        self.value = value
+    }
+    
     init(from decoder: Decoder)throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decodeIfPresent(Int.self, forKey: .id)
