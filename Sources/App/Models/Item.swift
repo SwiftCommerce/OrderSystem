@@ -23,3 +23,14 @@ final class Item: Codable, Content, MySQLModel, Migration {
         self.quantity = try container.decode(Int.self, forKey: .quantity)
     }
 }
+
+extension Item {
+    struct Response: Content {
+        let orderID, price, quantity, tax, total, totalWithTax: Int
+        let sku: String
+    }
+    
+    var response: Response {
+        return Response(orderID: self.orderID, price: self.price, quantity: self.quantity, tax: self.tax, total: self.total, totalWithTax: self.totalWithTax, sku: self.sku)
+    }
+}
