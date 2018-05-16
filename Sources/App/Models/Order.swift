@@ -11,8 +11,15 @@ final class Order: Content, MySQLModel, Migration {
     var paidTotal: Int
     var refundedTotal: Int
     
-    init(from decoder: Decoder) throws {
-        fatalError()
+    init(from decoder: Decoder)throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(Int.self, forKey: .id)
+        self.userID = try container.decodeIfPresent(Int.self, forKey: .userID)
+        self.comment = try container.decodeIfPresent(String.self, forKey: .comment)
+        self.status = try container.decode(Order.Status.self, forKey: .status)
+        self.paymentStatus = try container.decode(Order.PaymentStatus.self, forKey: .paymentStatus)
+        self.paidTotal = try container.decode(Int.self, forKey: .paidTotal)
+        self.refundedTotal = try container.decode(Int.self, forKey: .refundedTotal)
     }
     
     var guest: Bool { return self.userID == nil }
