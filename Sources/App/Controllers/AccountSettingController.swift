@@ -1,9 +1,10 @@
+import JWTMiddleware
 import Fluent
 import Vapor
 
 final class AccountSettingController: RouteCollection {
     func boot(router: Router) throws {
-        let settings = router.grouped(any, "account", Account.parameter, "settings")
+        let settings = router.grouped(JWTVerificationMiddleware()).grouped(any, "account", Account.parameter, "settings")
         
         settings.post(AccountSettingContent.self, use: create)
         settings.get(use: all)
