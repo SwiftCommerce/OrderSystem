@@ -1,4 +1,5 @@
 // swift-tools-version:4.0
+
 import PackageDescription
 
 let package = Package(
@@ -14,4 +15,3 @@ let package = Package(
         .testTarget(name: "AppTests", dependencies: ["App"])
     ]
 )
-
