@@ -15,18 +15,10 @@ extension Order.Status: MySQLDataConvertible, MySQLColumnDefinitionStaticReprese
     
     static func convertFromMySQLData(_ mysqlData: MySQLData) throws -> Order.Status {
         guard let rawValue = try mysqlData.integer(Int.self) else {
-            throw FluentError(
-                identifier: "badDataType",
-                reason: "Connot create `Order.Status` instance from non-`Int` type",
-                source: .capture()
-            )
+            throw FluentError(identifier: "badDataType", reason: "Connot create `Order.Status` instance from non-`Int` type", source: .capture())
         }
         guard let instance = Order.Status(rawValue: rawValue) else {
-            throw FluentError(
-                identifier: "badRawValue",
-                reason: "Coannot create `Order.Status` from value '\(rawValue)'",
-                source: .capture()
-            )
+            throw FluentError(identifier: "badRawValue", reason: "Coannot create `Order.Status` from value '\(rawValue)'", source: .capture() )
         }
         return instance
     }
