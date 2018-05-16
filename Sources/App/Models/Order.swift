@@ -16,4 +16,10 @@ final class Order: Content, MySQLModel, Migration {
     }
     
     var guest: Bool { return self.userID == nil }
+    
+    func total(with executor: DatabaseConnectable) -> Future<Int> {
+        return Future.flatMap(on: executor) {
+            return try Item.query(on: executor).join(field: \OrderItem.itemID).filter(OrderItem.self, \.orderID == self.requireID()).sum(\.total)
+        }.map(to: Int.self) { Int($0) }
+    }
 }
