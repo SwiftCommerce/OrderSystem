@@ -8,6 +8,11 @@ final class AccountSettingController: RouteCollection {
         let accountID = try request.parameters.next(Account.ID.self)
         return AccountSetting(account: accountID, name: setting.name, value: setting.value).save(on: request)
     }
+    
+    func all(_ request: Request)throws -> Future<[AccountSetting]> {
+        let accountID = try request.parameters.next(Account.ID.self)
+        return try AccountSetting.query(on: request).filter(\.accountID == accountID).all()
+    }
 }
 
 struct AccountSettingContent: Content {
