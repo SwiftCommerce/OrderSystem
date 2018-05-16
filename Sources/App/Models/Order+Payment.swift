@@ -9,5 +9,12 @@ extension Order {
         let paymentMethod: String
         var paidTotal: Int
         var refundedTotal: Int
+        
+        public static func prepare(on connection: MySQLConnection) -> Future<Void> {
+            return Database.create(self, on: connection) { builder in
+                try addProperties(to: builder)
+                try builder.addReference(from: \.orderID, to: \Order.id)
+            }
+        }
     }
 }
