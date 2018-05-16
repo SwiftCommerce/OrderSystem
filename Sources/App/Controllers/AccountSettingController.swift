@@ -2,7 +2,15 @@ import Fluent
 import Vapor
 
 final class AccountSettingController: RouteCollection {
-    func boot(router: Router) throws {}
+    func boot(router: Router) throws {
+        let settings = router.grouped(any, "account", Account.parameter, "settings")
+        
+        settings.post(AccountSettingContent.self, use: create)
+        settings.get(use: all)
+        settings.get(AccountSetting.parameter, use: get)
+        settings.patch(AccountSetting.parameter, use: update)
+        settings.delete(AccountSetting.parameter, use: delete)
+    }
     
     func create(_ request: Request, _ setting: AccountSettingContent)throws -> Future<AccountSetting> {
         let accountID = try request.parameters.next(Account.ID.self)
