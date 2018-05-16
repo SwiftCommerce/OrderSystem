@@ -15,4 +15,12 @@ final class OrderItem: MySQLPivot, Migration {
         self.orderID = try order.requireID()
         self.itemID = try item.requireID()
     }
+    
+    public static func prepare(on connection: MySQLConnection) -> Future<Void> {
+        return Database.create(self, on: connection) { builder in
+            try addProperties(to: builder)
+            try builder.addReference(from: \.orderID, to: \Order.id)
+            try builder.addReference(from: \.itemID, to: \Item.id)
+        }
+    }
 }
