@@ -43,6 +43,18 @@ final class AccountSettingController: RouteCollection {
             return setting.update(on: request)
         }
     }
+    
+    func delete(_ request: Request)throws -> Future<HTTPStatus> {
+        let accountID = try request.parameters.next(Account.ID.self)
+        let settingID = try request.parameters.next(AccountSetting.ID.self)
+        
+        return try Account.query(on: request).filter(\.id == accountID).count().flatMap(to: HTTPStatus.self) { count in
+            guard count > 0 else {
+                throw Abort(.notFound, reason: "No account found with ID '\(accountID)'")
+            }
+            return try AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID).delete().transform(to: .noContent)
+        }
+    }
 }
 
 struct AccountSettingContent: Content {
