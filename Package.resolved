@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "Auth",
+        "repositoryURL": "https://github.com/vapor/auth.git",
+        "state": {
+          "branch": null,
+          "revision": "b84242ee3d450516b050f7a64fc0b81604f56077",
+          "version": "2.0.0-rc.4.1"
+        }
+      },
+      {
         "package": "Console",
         "repositoryURL": "https://github.com/vapor/console.git",
         "state": {
@@ -62,6 +71,33 @@
           "branch": null,
           "revision": "5e766f72d81ef5fe8805d704efdffd17e4906134",
           "version": "3.0.6"
+        }
+      },
+      {
+        "package": "JWT",
+        "repositoryURL": "https://github.com/vapor/jwt.git",
+        "state": {
+          "branch": null,
+          "revision": "6acca0abfe335ce7585d678cd721e8a0e3c7a053",
+          "version": "3.0.0-rc.2.1.1"
+        }
+      },
+      {
+        "package": "JWTMiddleware",
+        "repositoryURL": "https://github.com/skelpo/JWTMiddleware.git",
+        "state": {
+          "branch": null,
+          "revision": "0f513260a6a836eab55899c168a02ced97535ae1",
+          "version": "0.6.1"
+        }
+      },
+      {
+        "package": "JWTVapor",
+        "repositoryURL": "https://github.com/skelpo/JWTVapor.git",
+        "state": {
+          "branch": null,
+          "revision": "9bab7ab42dc1e5d91d42982accb4e2e01c9327f3",
+          "version": "0.9.0"
         }
       },
       {
@@ -179,6 +215,15 @@
           "branch": null,
           "revision": "8c73eebf7c41c7d8bf83ff87f550e0f97d6aadc4",
           "version": "3.0.2"
+        }
+      },
+      {
+        "package": "VaporRequestStorage",
+        "repositoryURL": "https://github.com/skelpo/vapor-request-storage.git",
+        "state": {
+          "branch": null,
+          "revision": "8b78db172e07c6d616b85966177f195bed3936b2",
+          "version": "0.4.0"
         }
       },
       {
