@@ -24,44 +24,38 @@ final class AccountSettingController: RouteCollection {
     }
     
     func get(_ request: Request)throws -> Future<AccountSetting> {
-        let accountID = try request.parameters.next(Account.ID.self)
-        let settingID = try request.parameters.next(AccountSetting.ID.self)
-        
-        return try Account.query(on: request).filter(\.id == accountID).count().flatMap(to: AccountSetting?.self) { count in
-            guard count > 0 else {
-                throw Abort(.notFound, reason: "No account found with ID '\(accountID)'")
-            }
-            return try AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID).first()
-        }.unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(settingID)' for account '\(accountID)'"))
+        return self.settings(from: request) { query, account, setting in
+            return query.first().unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(setting)' for account '\(account)'"))
+        }
     }
     
     func update(_ request: Request)throws -> Future<AccountSetting> {
-        let accountID = try request.parameters.next(Account.ID.self)
-        let settingID = try request.parameters.next(AccountSetting.ID.self)
         let value = try request.content.syncGet(String.self, at: "value")
         
-        return try Account.query(on: request).filter(\.id == accountID).count().flatMap(to: AccountSetting?.self) { count in
-            guard count > 0 else {
-                throw Abort(.notFound, reason: "No account found with ID '\(accountID)'")
-            }
-            return try AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID).first()
-        }
-        .unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(settingID)' for account '\(accountID)'"))
-        .flatMap(to: AccountSetting.self) { setting in
+        return self.settings(from: request) { query, account, setting in
+            return query.first().unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(setting)' for account '\(account)'"))
+        }.flatMap(to: AccountSetting.self) { setting in
             setting.value = value
             return setting.update(on: request)
         }
     }
     
     func delete(_ request: Request)throws -> Future<HTTPStatus> {
-        let accountID = try request.parameters.next(Account.ID.self)
-        let settingID = try request.parameters.next(AccountSetting.ID.self)
-        
-        return try Account.query(on: request).filter(\.id == accountID).count().flatMap(to: HTTPStatus.self) { count in
-            guard count > 0 else {
-                throw Abort(.notFound, reason: "No account found with ID '\(accountID)'")
+        return self.settings(from: request) { query, _, _ in query.delete().transform(to: .noContent) }
+    }
+    
+    func settings<T>(from request: Request, finishing: @escaping (QueryBuilder<AccountSetting, AccountSetting>, Account.ID, AccountSetting.ID) -> Future<T>) -> Future<T> {
+        return Future.flatMap(on: request) {
+            let accountID = try request.parameters.next(Account.ID.self)
+            let settingID = try request.parameters.next(AccountSetting.ID.self)
+            
+            return try Account.query(on: request).filter(\.id == accountID).count().flatMap(to: T.self) { count in
+                guard count > 0 else {
+                    throw Abort(.notFound, reason: "No account found with ID '\(accountID)'")
+                }
+                let query = try AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID)
+                return finishing(query, accountID, settingID)
             }
-            return try AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID).delete().transform(to: .noContent)
         }
     }
 }
