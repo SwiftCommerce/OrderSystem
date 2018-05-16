@@ -2,7 +2,7 @@ import Foundation
 import FluentMySQL
 import Vapor
 
-final class Item: Codable, Content, MySQLModel, Migration {
+final class Item: Content, MySQLModel, Migration {
     var id: Int?
 
     let orderID: Int
