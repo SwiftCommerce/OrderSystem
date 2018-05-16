@@ -1,7 +1,7 @@
 import FluentMySQL
 
 extension Order {
-    enum Status: Int {
+    enum Status: Int, Codable {
         case open, processing, closed, cancelled
     }
 }

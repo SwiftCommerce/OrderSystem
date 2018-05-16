@@ -1,7 +1,7 @@
 import FluentMySQL
 
 extension Order {
-    enum PaymentStatus: Int {
+    enum PaymentStatus: Int, Codable {
         case open, partial, paid, refunded
     }
 }
