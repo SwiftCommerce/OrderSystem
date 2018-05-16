@@ -22,4 +22,10 @@ final class Order: Content, MySQLModel, Migration {
             return try Item.query(on: executor).join(field: \OrderItem.itemID).filter(OrderItem.self, \.orderID == self.requireID()).sum(\.total)
         }.map(to: Int.self) { Int($0) }
     }
+    
+    func tax(with executor: DatabaseConnectable) -> Future<Int> {
+        return Future.flatMap(on: executor) {
+            return try Item.query(on: executor).join(field: \OrderItem.itemID).filter(OrderItem.self, \.orderID == self.requireID()).sum(\.tax)
+        }.map(to: Int.self) { Int($0) }
+    }
 }
