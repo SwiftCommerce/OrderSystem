@@ -10,9 +10,9 @@ final class Item: Codable, Content, MySQLModel, Migration {
     var price: Int
     var quantity: Int
     
-    var tax: Int { print("TODO: Set `Item.tax` property the correct way"); return 108 }
+    var tax: Int { print("TODO: Set `Item.tax` property the correct way"); return Int((Double(self.total) * 0.08)) }
     var total: Int { return price * quantity }
-    var totalWithTax: Int { return (total * tax) / 100 }
+    var totalWithTax: Int { return total + tax }
     
     init(from decoder: Decoder)throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
