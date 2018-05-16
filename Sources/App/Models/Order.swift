@@ -36,3 +36,21 @@ final class Order: Content, MySQLModel, Migration {
         }.map(to: Int.self) { Int($0) }
     }
 }
+
+extension Order {
+    struct Response: Content {
+        var id, userID: Int?
+        var comment: String?
+        var status: Order.Status
+        var paymentStatus: Order.PaymentStatus
+        var paidTotal, refundedTotal, total, tax: Int
+        var guest: Bool
+    }
+    
+    func response(on request: Request)throws -> Future<Response> {
+        return map(to: Response.self, self.total(with: request), self.tax(with: request)) { total, tax in
+            return Response(id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus, paidTotal: self.paidTotal,
+                            refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest)
+        }
+    }
+}
