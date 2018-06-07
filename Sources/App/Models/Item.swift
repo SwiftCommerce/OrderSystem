@@ -31,10 +31,19 @@ final class Item: Content, MySQLModel, Migration {
     }
 }
 
+
+
 extension Item {
     struct Response: Content {
         let orderID, price, quantity, tax, total, totalWithTax: Int
         let sku: String
+    }
+    struct OrderResponse: Content {
+        let price, quantity, tax, total, totalWithTax: Int
+        let sku: String
+    }
+    var orderResponse: OrderResponse {
+        return OrderResponse(price: self.price, quantity: self.quantity, tax: self.tax, total: self.total, totalWithTax: self.totalWithTax, sku: self.sku)
     }
     
     var response: Response {

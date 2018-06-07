@@ -87,8 +87,8 @@
         "repositoryURL": "https://github.com/skelpo/JWTMiddleware.git",
         "state": {
           "branch": null,
-          "revision": "0f513260a6a836eab55899c168a02ced97535ae1",
-          "version": "0.6.1"
+          "revision": "7530c7956865e7892ff338108e8e5fc87687bcaa",
+          "version": "0.7.0"
         }
       },
       {
@@ -96,8 +96,8 @@
         "repositoryURL": "https://github.com/skelpo/JWTVapor.git",
         "state": {
           "branch": null,
-          "revision": "9bab7ab42dc1e5d91d42982accb4e2e01c9327f3",
-          "version": "0.9.0"
+          "revision": "a44c14b44f58f8fe4dd66380fb3f6bf7356936d5",
+          "version": "0.10.0"
         }
       },
       {
@@ -150,8 +150,8 @@
         "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
           "branch": null,
-          "revision": "a5db2a67515ad2b490ac5646db204a5edf939f47",
-          "version": "1.6.1"
+          "revision": "bad7c297427b5efedb96c4044f9e57b42881e9ea",
+          "version": "1.7.0"
         }
       },
       {

@@ -2,20 +2,26 @@ import JWTMiddleware
 import Fluent
 import Vapor
 
-final class AccountSettingController: RouteCollection {
+final class OrderController: RouteCollection {
     func boot(router: Router) throws {
-        let settings = router.grouped(JWTVerificationMiddleware()).grouped(any, "orders", "account", Account.parameter, "settings")
+        let orderRoute = router.grouped(JWTVerificationMiddleware()).grouped("orders")
         
-        settings.post(AccountSettingContent.self, use: create)
-        settings.get(use: all)
-        settings.get(AccountSetting.parameter, use: get)
-        settings.patch(AccountSetting.parameter, use: update)
-        settings.delete(AccountSetting.parameter, use: delete)
+        orderRoute.post(NewOrder.self, use: create)
+        orderRoute.get(use: all)
+        orderRoute.get(AccountSetting.parameter, use: get)
+        orderRoute.patch(AccountSetting.parameter, use: update)
+        orderRoute.delete(AccountSetting.parameter, use: delete)
     }
     
-    func create(_ request: Request, _ setting: AccountSettingContent)throws -> Future<AccountSetting> {
-        let accountID = try request.parameters.next(Account.ID.self)
-        return AccountSetting(account: accountID, name: setting.name, value: setting.value).save(on: request)
+    func create(_ request: Request, _ orderParameters: NewOrder)throws -> Future<Order.Response> {
+        //let accountID = try request.parameters.next(Account.ID.self)
+        
+        let order = Order()
+        
+        
+        return order.save(on: request).flatMap(to: Order.Response.self) { order in
+            return try order.response(on: request)
+        }
     }
     
     func all(_ request: Request)throws -> Future<[AccountSetting]> {
@@ -34,9 +40,9 @@ final class AccountSettingController: RouteCollection {
         
         return self.settings(from: request) { query, account, setting in
             return query.first().unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(setting)' for account '\(account)'"))
-        }.flatMap(to: AccountSetting.self) { setting in
-            setting.value = value
-            return setting.update(on: request)
+            }.flatMap(to: AccountSetting.self) { setting in
+                setting.value = value
+                return setting.update(on: request)
         }
     }
     
@@ -60,9 +66,6 @@ final class AccountSettingController: RouteCollection {
     }
 }
 
-struct AccountSettingContent: Content {
-    let id: AccountSetting.ID?
+struct NewOrder: Content {
     let accountID: Account.ID?
-    let name: String
-    let value: String
 }
