@@ -47,6 +47,15 @@
         }
       },
       {
+        "package": "Fluent",
+        "repositoryURL": "https://github.com/vapor/fluent.git",
+        "state": {
+          "branch": null,
+          "revision": "8f22ef2dfeb278179a2d6e91769a5c1ceccf31ef",
+          "version": "3.0.0-rc.2.4.1"
+        }
+      },
+      {
         "package": "FluentMySQL",
         "repositoryURL": "https://github.com/vapor/fluent-mysql.git",
         "state": {
