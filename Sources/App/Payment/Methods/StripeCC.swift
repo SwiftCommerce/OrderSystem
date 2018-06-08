@@ -56,11 +56,11 @@ class StripeCCPaymentMethod: PaymentMethod {
         return try stripeClient.charge.create(amount: amount, currency: .usd, description: "Order \(order.id!)", source: params).flatMap(to: PaymentMethodReturn.self){ (charge) in
             if charge.captured! && charge.amount! == amount {
                 return self.createTransaction(orderId: order.id!, userId: userId, amount: charge.amount!, status: .paid).map(to: PaymentMethodReturn.self) { transaction in
-                    return PaymentMethodReturn(succeess: true, message: "All wunderful", redirectUrl: nil, data: nil, transactionId: transaction.id)
+                    return PaymentMethodReturn(success: true, message: "All wunderful", redirectUrl: nil, data: nil, transactionId: transaction.id)
                 }
             }
             else {
-                return self.request.eventLoop.newSucceededFuture(result: PaymentMethodReturn(succeess: false, message: "Did not go through", redirectUrl: nil, data: charge.failureMessage!, transactionId:nil))
+                return self.request.eventLoop.newSucceededFuture(result: PaymentMethodReturn(success: false, message: "Did not go through", redirectUrl: nil, data: charge.failureMessage!, transactionId:nil))
             }
             
         }

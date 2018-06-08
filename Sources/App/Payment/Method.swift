@@ -4,7 +4,7 @@
 import Vapor
 
 struct PaymentMethodReturn: Content {
-    var succeess: Bool = true
+    var success: Bool = true
     var message: String = ""
     var redirectUrl: String?
     var data: String?

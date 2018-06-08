@@ -49,7 +49,7 @@ class CashPaymentMethod: PaymentMethod {
     
     /// pays for an order, this function is initiated by the user.
     func payForOrder(order: Order, userId: Int, amount: Int?) -> Future<PaymentMethodReturn> {
-        let ret = PaymentMethodReturn(succeess: true, message: "All wunderful", redirectUrl: nil, data: nil, transactionId: nil)
+        let ret = PaymentMethodReturn(success: true, message: "All wunderful", redirectUrl: nil, data: nil, transactionId: nil)
         return self.request.eventLoop.newSucceededFuture(result: ret)
     }
     
