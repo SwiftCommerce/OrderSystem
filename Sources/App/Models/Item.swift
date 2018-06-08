@@ -10,9 +10,16 @@ final class Item: Content, MySQLModel, Migration {
     var price: Int
     var quantity: Int
     
-    var tax: Int { print("TODO: Set `Item.tax` property the correct way"); return Int((Double(self.total) * 0.08)) }
+    var tax: Int { print("TODO: Set `Item.tax` property the correct way"); return Int((Double(self.total) * 0.8)) }
     var total: Int { return price * quantity }
     var totalWithTax: Int { return total + tax }
+    
+    init(orderID: Int, sku: String, price: Int, quantity: Int) {
+        self.orderID = orderID
+        self.sku = sku
+        self.price = price
+        self.quantity = quantity
+    }
     
     init(from decoder: Decoder)throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)

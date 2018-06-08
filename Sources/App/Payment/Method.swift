@@ -32,7 +32,7 @@ protocol PaymentMethod {
     func createTransaction(orderId: Order.ID, userId: Int, amount: Int?, status: Order.PaymentStatus?) -> Future<Order.Payment>
     
     /// pays for an order, this function is initiated by the user.
-    func payForOrder(order: Order, userId: Int, amount: Int?) -> Future<PaymentMethodReturn>
+    func payForOrder(order: Order, userId: Int, amount: Int, params: Any?) throws -> Future<PaymentMethodReturn>
     
     ///
     func refundTransaction(payment: Order.Payment, amount: Int?) -> Future<Order.Payment>

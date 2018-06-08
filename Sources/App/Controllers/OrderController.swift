@@ -14,20 +14,37 @@ final class OrderController: RouteCollection {
     }
     
     func create(_ request: Request, _ orderParameters: NewOrder)throws -> Future<Order.Response> {
-        //let accountID = try request.parameters.next(Account.ID.self)
-        
         let order = Order()
         
+        guard let accountID = orderParameters.accountID else {
+            throw Abort(.badRequest, reason: "No account id given.")
+        }
+        
+        guard let items = orderParameters.items else {
+            throw Abort(.badRequest, reason: "We don't like empty orders.")
+        }
+        
+        let user:User = try request.get("skelpo-payload")!
+        order.userID = user.id
+        order.accountID = accountID
         
         return order.save(on: request).flatMap(to: Order.Response.self) { order in
-            return try order.response(on: request)
+            var savingItems:[Future<Item>] = []
+            for item in items {
+                let i = Item(orderID: order.id!, sku: item.sku, price: item.price, quantity: item.quantity).save(on: request)
+                savingItems.append(i)
+            }
+            return savingItems.flatten(on: request).flatMap(to: Order.Response.self) { items in
+                return try order.response(on: request)
+            }
         }
     }
     
-    func all(_ request: Request)throws -> Future<[AccountSetting]> {
-        let accountID = try request.parameters.next(Account.ID.self)
-        return try AccountSetting.query(on: request).filter(\.accountID == accountID).all()
+    func all(_ request: Request)throws -> Future<[Order.Response]> {
+        let user:User = try request.get("skelpo-payload")!
+        return try Order.query(on: request).filter(\.userID == user.id).all().response(on: request)
     }
+    
     
     func get(_ request: Request)throws -> Future<AccountSetting> {
         return self.settings(from: request) { query, account, setting in
@@ -66,6 +83,13 @@ final class OrderController: RouteCollection {
     }
 }
 
+struct NewItem: Content {
+    let sku: String
+    var price: Int
+    var quantity: Int
+}
+
 struct NewOrder: Content {
     let accountID: Account.ID?
+    let items:[NewItem]?
 }

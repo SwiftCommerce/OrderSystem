@@ -17,6 +17,7 @@ final class VersionedCollection: RouteCollection {
         let group = router.grouped(any).grouped(JWTStorageMiddleware<User>())
         try group.register(collection: AccountSettingController())
         try group.register(collection: OrderController())
+        try group.register(collection: PaymentController())
         
     }
 }

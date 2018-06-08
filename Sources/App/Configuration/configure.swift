@@ -1,6 +1,7 @@
 import JWTMiddleware
 import FluentMySQL
 import Vapor
+import Stripe
 
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
@@ -15,12 +16,20 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     let router = EngineRouter.default()
     try routes(router)
     services.register(router, as: Router.self)
+    services.register(OrderService())
 
     /// Register middleware
     var middlewares = MiddlewareConfig() // Create _empty_ middleware config
     middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
+    middlewares.use(CORSMiddleware(configuration: .default()))
     services.register(middlewares)
     try services.register(StorageProvider())
+    
+    let config = StripeConfig(productionKey: Environment.get("STRIPE_KEY") ?? "", testKey: Environment.get("STRIPE_TEST_KEY") ?? "")
+    
+    services.register(config)
+    
+    try services.register(StripeProvider())
 
 
     /// Register the configured MySQL database to the database config.
