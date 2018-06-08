@@ -149,12 +149,11 @@ extension Order {
     }
     
     func response(on request: Request)throws -> Future<Response> {
-        return flatMap(to: Response.self, self.total(with: request), self.tax(with: request)) { total, tax in
-            return try self.items(with: request).map(to: Response.self) { items in
-                return Response(id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus, paidTotal: self.paidTotal,
-                                refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest, items: items.map { return $0.orderResponse })
-            }
-            
+        return try map(to: Response.self, self.total(with: request), self.tax(with: request), self.items(with: request)) { total, tax, items in
+            return Response(
+                id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus, paidTotal: self.paidTotal,
+                refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest, items: items.map { item in item.orderResponse }
+            )
         }
     }
 }
