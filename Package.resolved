@@ -146,15 +146,6 @@
         }
       },
       {
-        "package": "Stripe",
-        "repositoryURL": "https://github.com/vapor-community/stripe-provider.git",
-        "state": {
-          "branch": null,
-          "revision": "f4b81a73fb4818ceecb95456e9b3b940600f1da0",
-          "version": "2.0.8"
-        }
-      },
-      {
         "package": "swift-nio",
         "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
