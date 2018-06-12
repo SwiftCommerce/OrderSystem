@@ -21,15 +21,6 @@ final class Item: Content, MySQLModel, Migration {
         self.quantity = quantity
     }
     
-    init(from decoder: Decoder)throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try container.decodeIfPresent(Int.self, forKey: .id)
-        self.orderID = try container.decode(Int.self, forKey: .orderID)
-        self.sku = try container.decode(String.self, forKey: .sku)
-        self.price = try container.decode(Int.self, forKey: .price)
-        self.quantity = try container.decode(Int.self, forKey: .quantity)
-    }
-    
     public static func prepare(on connection: MySQLConnection) -> Future<Void> {
         return Database.create(self, on: connection) { builder in
             try addProperties(to: builder)
