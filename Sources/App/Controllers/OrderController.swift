@@ -27,6 +27,17 @@ final class OrderController: RouteCollection {
         let user:User = try request.get("skelpo-payload")!
         order.userID = user.id
         order.accountID = accountID
+
+        order.firstname = orderParameters.firstname
+        order.lastname = orderParameters.lastname
+        order.email = orderParameters.email
+        order.street = orderParameters.street
+        order.city = orderParameters.city
+        order.zip = orderParameters.zip
+        order.country = orderParameters.country
+        order.phone = orderParameters.phone
+        order.company = orderParameters.company
+        
         
         return order.save(on: request).flatMap(to: Order.Response.self) { order in
             var savingItems:[Future<Item>] = []
@@ -92,4 +103,13 @@ struct NewItem: Content {
 struct NewOrder: Content {
     let accountID: Account.ID?
     let items:[NewItem]?
+    let firstname:String?
+    let lastname:String?
+    let email:String?
+    let street:String?
+    let city:String?
+    let zip:String?
+    let country:String?
+    let company:String?
+    let phone:String?
 }
