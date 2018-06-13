@@ -50,8 +50,8 @@ class StripeCCPaymentMethod: PaymentMethod {
     /// pays for an order, this function is initiated by the user.
     func payForOrder(order: Order, userId: Int, amount: Int, params: Any?) throws -> Future<PaymentMethodReturn> {
         
-        let orderService:OrderService = try self.request.make(OrderService.self)
-        let stripeClient:StripeClient = try self.request.make(StripeClient.self)
+        let _ = try self.request.make(OrderService.self)
+        let stripeClient = try self.request.make(StripeClient.self)
         
         return try stripeClient.charge.create(amount: amount, currency: .usd, description: "Order \(order.id!)", source: params).flatMap(to: PaymentMethodReturn.self){ (charge) in
             if charge.captured! && charge.amount! == amount {

@@ -15,9 +15,11 @@ struct PaymentMethodReturn: Content {
 protocol PaymentMethod {
     /// Can this payment method take time, like a few minutes or hours until it is finished?
     static var pendingPossible: Bool { get }
+    
     /// Is pre-authentification needed? Like when charging a credit card?
     /// Note: This may be "chosen" and not obgligated. The final charge may be wanted a little later.
     static var preauthNeeded: Bool { get }
+    
     /// The name of this payment method.
     static var name: String { get }
     static var slug: String { get }
