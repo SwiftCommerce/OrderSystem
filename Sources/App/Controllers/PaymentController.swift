@@ -57,8 +57,3 @@ struct NewStripePaymentAttempt: NewPaymentAttempt, Content {
     var token: String?
     var orderID: Int?
 }
-
-
-
-
-
