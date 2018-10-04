@@ -7,6 +7,7 @@ extension Order {
         
         let orderID: Order.ID
         let paymentMethod: String
+        var externalID: String?
         var paidTotal: Int
         var refundedTotal: Int
         
