@@ -22,7 +22,7 @@ final class PaymentController: RouteCollection {
         let user:User = try request.get("skelpo-payload")!
         
         
-        return try Order.query(on: request).filter(\.id == orderID).filter(\.userID == user.id).first().flatMap(to: PaymentMethodReturn.self) { order_ in
+        return Order.query(on: request).filter(\.id == orderID).filter(\.userID == user.id).first().flatMap(to: PaymentMethodReturn.self) { order_ in
             guard let order = order_ else {
                 throw Abort(.badRequest, reason: "No order found.")
             }
@@ -57,3 +57,8 @@ struct NewStripePaymentAttempt: NewPaymentAttempt, Content {
     var token: String?
     var orderID: Int?
 }
+
+
+
+
+

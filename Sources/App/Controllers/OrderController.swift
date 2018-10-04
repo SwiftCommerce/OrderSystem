@@ -78,16 +78,19 @@ final class OrderController: RouteCollection {
         return self.settings(from: request) { query, _, _ in query.delete().transform(to: .noContent) }
     }
     
-    func settings<T>(from request: Request, finishing: @escaping (QueryBuilder<AccountSetting, AccountSetting>, Account.ID, AccountSetting.ID) -> Future<T>) -> Future<T> {
+    func settings<T>(
+        from request: Request,
+        finishing: @escaping (QueryBuilder<AccountSetting.Database, AccountSetting>, Account.ID, AccountSetting.ID
+    ) -> Future<T>) -> Future<T> {
         return Future.flatMap(on: request) {
             let accountID = try request.parameters.next(Account.ID.self)
             let settingID = try request.parameters.next(AccountSetting.ID.self)
             
-            return try Account.query(on: request).filter(\.id == accountID).count().flatMap(to: T.self) { count in
+            return Account.query(on: request).filter(\.id == accountID).count().flatMap(to: T.self) { count in
                 guard count > 0 else {
                     throw Abort(.notFound, reason: "No account found with ID '\(accountID)'")
                 }
-                let query = try AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID)
+                let query = AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID)
                 return finishing(query, accountID, settingID)
             }
         }

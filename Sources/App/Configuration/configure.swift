@@ -7,7 +7,7 @@ import Stripe
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
     /// Register providers first
     try services.register(FluentMySQLProvider())
-    try services.register(JWTProvider { n in
+    try services.register(JWTProvider { n, _ in
         let headers = JWTHeader(alg: "RS256", crit: ["exp", "aud"])
         return try RSAService(n: n, e: "AQAB", header: headers)
     })

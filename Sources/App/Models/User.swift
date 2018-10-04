@@ -13,8 +13,8 @@ struct User: IdentifiableJWTPayload {
     let id: Int
     
     
-    func verify() throws {
+    func verify(using signer: JWTSigner) throws {
         let expiration = Date(timeIntervalSince1970: self.exp)
-        try ExpirationClaim(value: expiration).verify()
+        try ExpirationClaim(value: expiration).verifyNotExpired()
     }
 }

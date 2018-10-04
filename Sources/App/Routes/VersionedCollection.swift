@@ -18,6 +18,5 @@ final class VersionedCollection: RouteCollection {
         try group.register(collection: AccountSettingController())
         try group.register(collection: OrderController())
         try group.register(collection: PaymentController())
-        
     }
 }

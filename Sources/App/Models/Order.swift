@@ -1,7 +1,7 @@
 import FluentMySQL
 import Vapor
 
-final class Order: Content, MySQLModel, Migration, Timestampable, SoftDeletable {
+final class Order: Content, MySQLModel, Migration {
     var createdAt: Date?
     var updatedAt: Date?
     var deletedAt: Date?
@@ -69,7 +69,7 @@ final class Order: Content, MySQLModel, Migration, Timestampable, SoftDeletable 
     }
     
     func items(with executor: DatabaseConnectable)throws -> Future<[Item]> {
-        return try Item.query(on: executor).filter(\.orderID == self.id).all()
+        return try Item.query(on: executor).filter(\.orderID == self.requireID()).all()
     }
 }
 

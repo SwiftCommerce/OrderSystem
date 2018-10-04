@@ -17,7 +17,7 @@ final class AccountSetting: Content, MySQLModel, Migration, Parameter {
     public static func prepare(on connection: MySQLConnection) -> Future<Void> {
         return Database.create(self, on: connection) { builder in
             try addProperties(to: builder)
-            try builder.addReference(from: \.accountID, to: \Account.id)
+            builder.reference(from: \.accountID, to: \Account.id)
         }
     }
 }
