@@ -1,5 +1,6 @@
 import JWTMiddleware
 import FluentMySQL
+import Transaction
 import Vapor
 import Stripe
 
@@ -7,6 +8,7 @@ import Stripe
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
     /// Register providers first
     try services.register(FluentMySQLProvider())
+    try services.register(TransactionProvider())
     try services.register(JWTProvider { n, _ in
         let headers = JWTHeader(alg: "RS256", crit: ["exp", "aud"])
         return try RSAService(n: n, e: "AQAB", header: headers)
@@ -54,5 +56,11 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: AccountSetting.self, database: .mysql)
     services.register(migrations)
 
+    /// Configure controllers for making payments with third-party payment providers (i.e. PayPal or Stripe).
+    var controllers = PaymentControllers(root: "orders", Order.parameter, "payment")
+    controllers.add(PayPalController(structure: .separate))
+    controllers.add(StripeController(structure: .mixed))
+    services.register(controllers)
+    
     services.register(GlobalConfig.self)
 }
