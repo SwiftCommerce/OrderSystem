@@ -1,7 +1,7 @@
 import FluentMySQL
 import Vapor
 
-final class Order: Content, MySQLModel, Migration {
+final class Order: Content, MySQLModel, Migration, Parameter {
     var createdAt: Date?
     var updatedAt: Date?
     var deletedAt: Date?
