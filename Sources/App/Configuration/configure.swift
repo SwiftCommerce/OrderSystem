@@ -57,7 +57,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     services.register(migrations)
 
     /// Configure controllers for making payments with third-party payment providers (i.e. PayPal or Stripe).
-    var controllers = PaymentControllers(root: "orders", Order.parameter, "payment")
+    var controllers = PaymentControllers(root: any, "orders", Order.parameter, "payment")
     controllers.add(PayPalController(structure: .separate))
     controllers.add(StripeController(structure: .mixed))
     services.register(controllers)
