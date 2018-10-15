@@ -2,19 +2,21 @@ import FluentMySQL
 import Vapor
 
 final class Order: Content, MySQLModel, Migration, Parameter {
+    var id: Int?
     var createdAt: Date?
     var updatedAt: Date?
     var deletedAt: Date?
     
-    var id: Int?
+    // Properties with default values.
+    var status: Order.Status = .open
+    var paymentStatus: Order.PaymentStatus = .open
+    var paidTotal: Int = 0
+    var refundedTotal: Int = 0
     
     var userID: Int?
     var accountID: Int?
     var comment: String?
-    var status: Order.Status
-    var paymentStatus: Order.PaymentStatus
-    var paidTotal: Int
-    var refundedTotal: Int
+    var currency: String
     
     // Costumer and address data
     var firstname: String?
@@ -36,16 +38,7 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var shippingZip: String?
     var shippingCity: String?
     var shippingCountry: String?
-    
-    
-    
-    /// This is the method called for new orders.
-    init() {
-        status = .open
-        paymentStatus = .open
-        paidTotal = 0
-        refundedTotal = 0
-    }
+
     
     var guest: Bool { return self.userID == nil }
     
