@@ -8,8 +8,4 @@ extension Order.Payment: PaymentStructure {
     var amount: Int {
         return self.paidTotal
     }
-    
-    var stripeCurrency: StripeCurrency? {
-        return StripeCurrency(rawValue: self.currency)
-    }
 }
