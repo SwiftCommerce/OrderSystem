@@ -6,48 +6,42 @@ final class OrderController: RouteCollection {
     func boot(router: Router) throws {
         let orderRoute = router.grouped(JWTVerificationMiddleware()).grouped("orders")
         
-        orderRoute.post(NewOrder.self, use: create)
+        orderRoute.post(Order.self, use: create)
         orderRoute.get(use: all)
         orderRoute.get(AccountSetting.parameter, use: get)
         orderRoute.patch(AccountSetting.parameter, use: update)
         orderRoute.delete(AccountSetting.parameter, use: delete)
     }
     
-    func create(_ request: Request, _ orderParameters: NewOrder)throws -> Future<Order.Response> {
-        let order = Order()
-        
-        guard let accountID = orderParameters.accountID else {
+    func create(_ request: Request, _ order: Order)throws -> Future<Order.Response> {
+        guard order.accountID != nil else {
             throw Abort(.badRequest, reason: "No account id given.")
         }
         
-        guard let items = orderParameters.items else {
-            throw Abort(.badRequest, reason: "We don't like empty orders.")
-        }
+        let user: User? = try request.get("skelpo-payload")
+        order.userID = user?.id
         
-        let user:User = try request.get("skelpo-payload")!
-        order.userID = user.id
-        order.accountID = accountID
+        let items = request.content.get([ItemContent]?.self, at: "items").map { $0 ?? [] }
+        let saved = order.save(on: request)
 
-        order.firstname = orderParameters.firstname
-        order.lastname = orderParameters.lastname
-        order.email = orderParameters.email
-        order.street = orderParameters.street
-        order.city = orderParameters.city
-        order.zip = orderParameters.zip
-        order.country = orderParameters.country
-        order.phone = orderParameters.phone
-        order.company = orderParameters.company
         
-        
-        return order.save(on: request).flatMap(to: Order.Response.self) { order in
-            var savingItems:[Future<Item>] = []
-            for item in items {
-                let i = Item(orderID: order.id!, sku: item.sku, price: item.price, quantity: item.quantity).save(on: request)
-                savingItems.append(i)
-            }
-            return savingItems.flatten(on: request).flatMap(to: Order.Response.self) { items in
-                return try order.response(on: request)
-            }
+        return flatMap(saved, items) { order, itemsData -> Future<Order> in
+            let id = try order.requireID()
+            let items = itemsData.map { data -> Future<Item> in
+                let item = Item(
+                    orderID: id,
+                    sku: data.sku,
+                    name: data.name,
+                    description: data.description,
+                    price: data.price,
+                    quantity: data.quantity
+                )
+                return item.save(on: request)
+            }.flatten(on: request)
+            
+            return items.transform(to: order)
+        }.flatMap { order in
+            return try order.response(on: request)
         }
     }
     
@@ -97,22 +91,10 @@ final class OrderController: RouteCollection {
     }
 }
 
-struct NewItem: Content {
+struct ItemContent: Content {
     let sku: String
+    let name: String
+    let description: String?
     var price: Int
     var quantity: Int
-}
-
-struct NewOrder: Content {
-    let accountID: Account.ID?
-    let items:[NewItem]?
-    let firstname:String?
-    let lastname:String?
-    let email:String?
-    let street:String?
-    let city:String?
-    let zip:String?
-    let country:String?
-    let company:String?
-    let phone:String?
 }
