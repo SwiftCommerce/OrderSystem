@@ -30,6 +30,7 @@ extension Order: PaymentRepresentable {
             let payment = try Order.Payment(
                 orderID: self.requireID(),
                 paymentMethod: Method.slug,
+                currency: self.currency,
                 paidTotal: self.paidTotal,
                 refundedTotal: self.refundedTotal
             )
