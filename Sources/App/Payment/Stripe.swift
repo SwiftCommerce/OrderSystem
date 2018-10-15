@@ -10,6 +10,6 @@ extension Order.Payment: PaymentStructure {
     }
     
     var stripeCurrency: StripeCurrency? {
-        return .usd
+        return StripeCurrency(rawValue: self.currency)
     }
 }
