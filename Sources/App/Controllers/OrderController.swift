@@ -24,7 +24,7 @@ final class OrderController: RouteCollection {
         return saved.flatMap { order -> Future<Order> in
             let id = try order.requireID()
             let items = (content.items ?? []).map { data in data.save(on: request, order: id) }.flatten(on: request)
-            let addresses = content.addresses?.save(on: request) ?? request.future()
+            let addresses = content.addresses?.save(on: request, order: id) ?? request.future()
             
             return items.and(addresses).transform(to: order)
         }.flatMap { order in
@@ -122,16 +122,34 @@ struct ItemContent: Content {
     }
 }
 
-struct OrderAddress: Content {
-    let shipping: Address?
-    let billing: Address?
+struct AddressContent: Content {
+    var street: String?
+    var street2: String?
+    var zip: String?
+    var city: String?
+    var country: String?
     
-    func save(on conn: DatabaseConnectable) -> Future<Void> {
-        self.shipping?.shipping = true
-        self.billing?.shipping = false
-        
-        let shipping = self.shipping?.save(on: conn).transform(to: ()) ?? conn.future()
-        let billing = self.billing?.save(on: conn).transform(to: ()) ?? conn.future()
+    func save(on conn: DatabaseConnectable, order: Order.ID, isShipping: Bool) -> Future<Address> {
+        let address = Address(
+            order: order,
+            street: self.street,
+            street2: self.street2,
+            zip: self.zip,
+            city: self.city,
+            country: self.country,
+            shipping: isShipping
+        )
+        return address.save(on: conn)
+    }
+}
+
+struct OrderAddress: Content {
+    let shipping: AddressContent?
+    let billing: AddressContent?
+
+    func save(on conn: DatabaseConnectable, order: Order.ID) -> Future<Void> {
+        let shipping = self.shipping?.save(on: conn, order: order, isShipping: true).transform(to: ()) ?? conn.future()
+        let billing = self.billing?.save(on: conn, order: order, isShipping: false).transform(to: ()) ?? conn.future()
         return map(shipping, billing) { _, _ in return () }
     }
 }
