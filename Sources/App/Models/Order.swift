@@ -109,14 +109,22 @@ extension Order {
         var paidTotal, refundedTotal, total, tax: Int
         var guest: Bool
         var items: [Item.OrderResponse]
+        var shippingAddress: Address?
+        var billingAddress: Address?
     }
     
     func response(on request: Request)throws -> Future<Response> {
-        return try map(to: Response.self, self.total(with: request), self.tax(with: request), self.items(with: request)) { total, tax, items in
+        return try map(
+            self.total(with: request),
+            self.tax(with: request),
+            self.items(with: request),
+            Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
+            Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
+        ) { total, tax, items, shipping, billing in
             return Response(
                 id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus,
                 paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest,
-                items: items.map { item in item.orderResponse }
+                items: items.map { item in item.orderResponse }, shippingAddress: shipping, billingAddress: billing
             )
         }
     }
