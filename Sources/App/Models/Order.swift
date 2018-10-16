@@ -23,21 +23,6 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var email: String?
     var phone: String?
     
-    // Billing address
-    var street: String?
-    var street2: String?
-    var zip: String?
-    var city: String?
-    var country: String?
-
-    // Shipping address
-    var shippingStreet: String?
-    var shippingStreet2: String?
-    var shippingZip: String?
-    var shippingCity: String?
-    var shippingCountry: String?
-    
-    
     
     /// This is the method called for new orders.
     init() {
