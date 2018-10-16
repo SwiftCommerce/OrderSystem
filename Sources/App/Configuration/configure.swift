@@ -9,9 +9,9 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     /// Register providers first
     try services.register(FluentMySQLProvider())
     try services.register(TransactionProvider())
-    try services.register(JWTProvider { n, _ in
+    try services.register(JWTProvider { n, d in
         let headers = JWTHeader(alg: "RS256", crit: ["exp", "aud"])
-        return try RSAService(n: n, e: "AQAB", header: headers)
+        return try RSAService(n: n, e: "AQAB", d: d, header: headers)
     })
 
     /// Register routes to the router
@@ -51,6 +51,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     var migrations = MigrationConfig()
     migrations.add(model: Order.self, database: .mysql)
     migrations.add(model: Item.self, database: .mysql)
+    migrations.add(model: Address.self, database: .mysql)
     migrations.add(model: Order.Payment.self, database: .mysql)
     migrations.add(model: Account.self, database: .mysql)
     migrations.add(model: AccountSetting.self, database: .mysql)
