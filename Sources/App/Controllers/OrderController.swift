@@ -22,11 +22,17 @@ final class OrderController: RouteCollection {
         order.userID = user?.id
         
         let items = request.content.get([ItemContent]?.self, at: "items").map { $0 ?? [] }
+        let addresses = try request.content.decode(OrderAddress.self).map { addresses -> OrderAddress in
+            addresses.billingAddress?.shipping = false
+            addresses.shippingAddress?.shipping = true
+            return addresses
+        }
         let saved = order.save(on: request)
 
         
-        return flatMap(saved, items) { order, itemsData -> Future<Order> in
+        return flatMap(saved, items, addresses) { order, itemsData, addresses -> Future<Order> in
             let id = try order.requireID()
+            
             let items = itemsData.map { data -> Future<Item> in
                 let item = Item(
                     orderID: id,
@@ -38,8 +44,9 @@ final class OrderController: RouteCollection {
                 )
                 return item.save(on: request)
             }.flatten(on: request)
+            let addresses = addresses.save(on: request)
             
-            return items.transform(to: order)
+            return items.and(addresses).transform(to: order)
         }.flatMap { order in
             return try order.response(on: request)
         }
@@ -62,9 +69,9 @@ final class OrderController: RouteCollection {
         
         return self.settings(from: request) { query, account, setting in
             return query.first().unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(setting)' for account '\(account)'"))
-            }.flatMap(to: AccountSetting.self) { setting in
-                setting.value = value
-                return setting.update(on: request)
+        }.flatMap(to: AccountSetting.self) { setting in
+            setting.value = value
+            return setting.update(on: request)
         }
     }
     
@@ -97,4 +104,15 @@ struct ItemContent: Content {
     let description: String?
     var price: Int
     var quantity: Int
+}
+
+struct OrderAddress: Content {
+    let shippingAddress: Address?
+    let billingAddress: Address?
+    
+    func save(on conn: DatabaseConnectable) -> Future<Void> {
+        let shipping = self.shippingAddress?.save(on: conn).transform(to: ()) ?? conn.future()
+        let billing = self.billingAddress?.save(on: conn).transform(to: ()) ?? conn.future()
+        return map(shipping, billing) { _, _ in return () }
+    }
 }
