@@ -7,15 +7,13 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var updatedAt: Date?
     var deletedAt: Date?
     
-    // Properties with default values.
-    var status: Order.Status = .open
-    var paymentStatus: Order.PaymentStatus = .open
-    var paidTotal: Int = 0
-    var refundedTotal: Int = 0
-    
     var userID: Int?
     var accountID: Int?
     var comment: String?
+    var status: Order.Status
+    var paymentStatus: Order.PaymentStatus
+    var paidTotal: Int
+    var refundedTotal: Int
     var currency: String
     
     // Costumer and address data
@@ -38,7 +36,17 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var shippingZip: String?
     var shippingCity: String?
     var shippingCountry: String?
-
+    
+    
+    
+    /// This is the method called for new orders.
+    init() {
+        self.status = .open
+        self.paymentStatus = .open
+        self.paidTotal = 0
+        self.refundedTotal = 0
+        self.currency = "USD"
+    }
     
     var guest: Bool { return self.userID == nil }
     
