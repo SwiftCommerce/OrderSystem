@@ -2,13 +2,17 @@ import JWTMiddleware
 import FluentMySQL
 import Transaction
 import Vapor
+
 import Stripe
+import PayPal
 
 /// Called before your application initializes.
-public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
+public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
     /// Register providers first
     try services.register(FluentMySQLProvider())
     try services.register(TransactionProvider())
+    try services.register(StripeProvider())
+    try services.register(PayPalProvider())
     try services.register(JWTProvider { n, d in
         let headers = JWTHeader(alg: "RS256", crit: ["exp", "aud"])
         return try RSAService(n: n, e: "AQAB", d: d, header: headers)
@@ -25,13 +29,9 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
     middlewares.use(CORSMiddleware(configuration: .default()))
     services.register(middlewares)
-    try services.register(StorageProvider())
     
-    let config = StripeConfig(productionKey: Environment.get("STRIPE_KEY") ?? "", testKey: Environment.get("STRIPE_TEST_KEY") ?? "")
-    
-    services.register(config)
-    
-    try services.register(StripeProvider())
+    let stripe = StripeConfig(productionKey: Environment.get("STRIPE_KEY") ?? "", testKey: Environment.get("STRIPE_TEST_KEY") ?? "")
+    services.register(stripe)
 
 
     /// Register the configured MySQL database to the database config.
@@ -64,4 +64,5 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     services.register(controllers)
     
     services.register(GlobalConfig.self)
+    services.register(Storage())
 }
