@@ -1,6 +1,9 @@
 import FluentMySQL
+import Vapor
 
 final class Address {
+    var id: Int?
+    
     var street: String?
     var street2: String?
     var zip: String?
@@ -15,3 +18,8 @@ final class Address {
         self.country = country
     }
 }
+
+extension Address: Content {}
+extension Address: Parameter {}
+extension Address: Migration {}
+extension Address: MySQLModel {}
