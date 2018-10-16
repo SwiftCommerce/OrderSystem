@@ -53,11 +53,7 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     func total(with executor: DatabaseConnectable) -> Future<Int> {
         return Future.flatMap(on: executor) {
             return try Item.query(on: executor).filter(\.orderID == self.requireID()).all().map(to: Int.self) { items in
-                var total = 0
-                for item in items {
-                    total = total + item.total
-                }
-                return total
+                return items.reduce(0) { $0 + $1.total }
             }
         }
     }
@@ -118,8 +114,9 @@ extension Order {
     func response(on request: Request)throws -> Future<Response> {
         return try map(to: Response.self, self.total(with: request), self.tax(with: request), self.items(with: request)) { total, tax, items in
             return Response(
-                id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus, paidTotal: self.paidTotal,
-                refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest, items: items.map { item in item.orderResponse }
+                id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus,
+                paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest,
+                items: items.map { item in item.orderResponse }
             )
         }
     }
