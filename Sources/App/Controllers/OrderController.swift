@@ -6,45 +6,25 @@ final class OrderController: RouteCollection {
     func boot(router: Router) throws {
         let orderRoute = router.grouped(JWTVerificationMiddleware()).grouped("orders")
         
-        orderRoute.post(Order.self, use: create)
+        orderRoute.post(OrderContent.self, use: create)
         orderRoute.get(use: all)
         orderRoute.get(AccountSetting.parameter, use: get)
         orderRoute.patch(AccountSetting.parameter, use: update)
         orderRoute.delete(AccountSetting.parameter, use: delete)
     }
     
-    func create(_ request: Request, _ order: Order)throws -> Future<Order.Response> {
-        guard order.accountID != nil else {
-            throw Abort(.badRequest, reason: "No account id given.")
-        }
-        
+    func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
+        let order = Order()
         let user: User? = try request.get("skelpo-payload")
-        order.userID = user?.id
         
-        let items = request.content.get([ItemContent]?.self, at: "items").map { $0 ?? [] }
-        let addresses = try request.content.decode(OrderAddress.self).map { addresses -> OrderAddress in
-            addresses.billingAddress?.shipping = false
-            addresses.shippingAddress?.shipping = true
-            return addresses
-        }
+        order.userID = user?.id
+        content.populate(order: order)
         let saved = order.save(on: request)
 
-        
-        return flatMap(saved, items, addresses) { order, itemsData, addresses -> Future<Order> in
+        return saved.flatMap { order -> Future<Order> in
             let id = try order.requireID()
-            
-            let items = itemsData.map { data -> Future<Item> in
-                let item = Item(
-                    orderID: id,
-                    sku: data.sku,
-                    name: data.name,
-                    description: data.description,
-                    price: data.price,
-                    quantity: data.quantity
-                )
-                return item.save(on: request)
-            }.flatten(on: request)
-            let addresses = addresses.save(on: request)
+            let items = content.items.map { data in data.save(on: request, order: id) }.flatten(on: request)
+            let addresses = content.addresses.save(on: request)
             
             return items.and(addresses).transform(to: order)
         }.flatMap { order in
@@ -98,21 +78,58 @@ final class OrderController: RouteCollection {
     }
 }
 
+struct OrderContent: Content {
+    var accountID: Int?
+    var comment: String?
+    var firstname: String?
+    var lastname: String?
+    var company: String?
+    var email: String?
+    var phone: String?
+    var addresses: OrderAddress
+    var items: [ItemContent]
+    
+    func populate(order: Order) {
+        order.accountID = self.accountID
+        order.comment = self.comment
+        order.firstname = self.firstname
+        order.lastname = self.lastname
+        order.company = self.company
+        order.email = self.email
+        order.phone = self.phone
+    }
+}
+
 struct ItemContent: Content {
     let sku: String
     let name: String
     let description: String?
     var price: Int
     var quantity: Int
+    
+    func save(on conn: DatabaseConnectable, order: Order.ID) -> Future<Item> {
+        let item = Item(
+            orderID: order,
+            sku: self.sku,
+            name: self.name,
+            description: self.description,
+            price: self.price,
+            quantity: self.quantity
+        )
+        return item.save(on: conn)
+    }
 }
 
 struct OrderAddress: Content {
-    let shippingAddress: Address?
-    let billingAddress: Address?
+    let shipping: Address?
+    let billing: Address?
     
     func save(on conn: DatabaseConnectable) -> Future<Void> {
-        let shipping = self.shippingAddress?.save(on: conn).transform(to: ()) ?? conn.future()
-        let billing = self.billingAddress?.save(on: conn).transform(to: ()) ?? conn.future()
+        self.shipping?.shipping = true
+        self.billing?.shipping = false
+        
+        let shipping = self.shipping?.save(on: conn).transform(to: ()) ?? conn.future()
+        let billing = self.billing?.save(on: conn).transform(to: ()) ?? conn.future()
         return map(shipping, billing) { _, _ in return () }
     }
 }
