@@ -7,16 +7,16 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var updatedAt: Date?
     var deletedAt: Date?
     
-    var userID: Int?
-    var accountID: Int?
-    var comment: String?
     var status: Order.Status
     var paymentStatus: Order.PaymentStatus
     var paidTotal: Int
     var refundedTotal: Int
     var currency: String
     
-    // Costumer and address data
+    var userID: Int?
+    var accountID: Int?
+    var comment: String?
+    
     var firstname: String?
     var lastname: String?
     var company: String?
