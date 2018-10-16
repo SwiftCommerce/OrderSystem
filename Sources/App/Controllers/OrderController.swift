@@ -79,6 +79,7 @@ final class OrderController: RouteCollection {
 }
 
 struct OrderContent: Content {
+    var currency: String
     var accountID: Int?
     var comment: String?
     var firstname: String?
@@ -90,6 +91,7 @@ struct OrderContent: Content {
     var items: [ItemContent]?
     
     func populate(order: Order) {
+        order.currency = self.currency
         order.accountID = self.accountID
         order.comment = self.comment
         order.firstname = self.firstname
