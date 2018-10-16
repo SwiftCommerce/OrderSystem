@@ -23,8 +23,8 @@ final class OrderController: RouteCollection {
 
         return saved.flatMap { order -> Future<Order> in
             let id = try order.requireID()
-            let items = content.items.map { data in data.save(on: request, order: id) }.flatten(on: request)
-            let addresses = content.addresses.save(on: request)
+            let items = (content.items ?? []).map { data in data.save(on: request, order: id) }.flatten(on: request)
+            let addresses = content.addresses?.save(on: request) ?? request.future()
             
             return items.and(addresses).transform(to: order)
         }.flatMap { order in
@@ -86,8 +86,8 @@ struct OrderContent: Content {
     var company: String?
     var email: String?
     var phone: String?
-    var addresses: OrderAddress
-    var items: [ItemContent]
+    var addresses: OrderAddress?
+    var items: [ItemContent]?
     
     func populate(order: Order) {
         order.accountID = self.accountID
