@@ -80,26 +80,6 @@ final class OrderController: RouteCollection {
     }
 }
 
-struct ItemContent: Content {
-    let sku: String
-    let name: String
-    let description: String?
-    var price: Int
-    var quantity: Int
-    
-    func save(on conn: DatabaseConnectable, order: Order.ID) -> Future<Item> {
-        let item = Item(
-            orderID: order,
-            sku: self.sku,
-            name: self.name,
-            description: self.description,
-            price: self.price,
-            quantity: self.quantity
-        )
-        return item.save(on: conn)
-    }
-}
-
 struct AddressContent: Content {
     var street: String?
     var street2: String?
