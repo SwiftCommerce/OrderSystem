@@ -94,8 +94,8 @@ extension Order {
         var paidTotal, refundedTotal, total, tax: Int
         var guest: Bool
         var items: [Item.OrderResponse]
-        var shippingAddress: Address?
-        var billingAddress: Address?
+        var shippingAddress: Address.Response?
+        var billingAddress: Address.Response?
     }
     
     func response(on request: Request)throws -> Future<Response> {
@@ -109,7 +109,7 @@ extension Order {
             return Response(
                 id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus,
                 paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest,
-                items: items.map { item in item.orderResponse }, shippingAddress: shipping, billingAddress: billing
+                items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
             )
         }
     }
