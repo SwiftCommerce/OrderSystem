@@ -34,18 +34,9 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     services.register(stripe)
 
 
-    /// Register the configured MySQL database to the database config.
-    let mysqlConfig = MySQLDatabaseConfig.init(
-        hostname: Environment.get("DATABASE_HOSTNAME") ?? "localhost",
-        port: 3306,
-        username: Environment.get("DATABASE_USER") ?? "root",
-        password: Environment.get("DATABASE_PASSWORD") ?? "password",
-        database:  Environment.get("DATABASE_DB") ?? "order_system"
-    )
-    
-    var databases = DatabasesConfig()
-    databases.add(database: MySQLDatabase(config: mysqlConfig), as: .mysql)
-    services.register(databases)
+    var databaseConfig = DatabasesConfig()
+    try databases(config: &databaseConfig)
+    services.register(databaseConfig)
 
     /// Configure migrations
     var migrations = MigrationConfig()
