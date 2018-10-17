@@ -8,9 +8,7 @@ final class OrderController: RouteCollection {
         
         orderRoute.post(OrderContent.self, use: create)
         orderRoute.get(use: all)
-        orderRoute.get(AccountSetting.parameter, use: get)
-        orderRoute.patch(AccountSetting.parameter, use: update)
-        orderRoute.delete(AccountSetting.parameter, use: delete)
+        orderRoute.get(Order.parameter, use: get)
     }
     
     func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
@@ -40,42 +38,16 @@ final class OrderController: RouteCollection {
     }
     
     
-    func get(_ request: Request)throws -> Future<AccountSetting> {
-        return self.settings(from: request) { query, account, setting in
-            return query.first().unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(setting)' for account '\(account)'"))
+    func get(_ request: Request)throws -> Future<Order.Response> {
+        guard
+            let user = try request.get("skelpo-payload", as: User.self),
+            let rawID = request.parameters.rawValues(for: Order.self).first,
+            let id = Int(rawID)
+        else {
+            throw Abort(.notFound)
         }
-    }
-    
-    func update(_ request: Request)throws -> Future<AccountSetting> {
-        let value = try request.content.syncGet(String.self, at: "value")
-        
-        return self.settings(from: request) { query, account, setting in
-            return query.first().unwrap(or: Abort(.notFound, reason: "No account setting found with ID '\(setting)' for account '\(account)'"))
-        }.flatMap(to: AccountSetting.self) { setting in
-            setting.value = value
-            return setting.update(on: request)
-        }
-    }
-    
-    func delete(_ request: Request)throws -> Future<HTTPStatus> {
-        return self.settings(from: request) { query, _, _ in query.delete().transform(to: .noContent) }
-    }
-    
-    func settings<T>(
-        from request: Request,
-        finishing: @escaping (QueryBuilder<AccountSetting.Database, AccountSetting>, Account.ID, AccountSetting.ID
-    ) -> Future<T>) -> Future<T> {
-        return Future.flatMap(on: request) {
-            let accountID = try request.parameters.next(Account.ID.self)
-            let settingID = try request.parameters.next(AccountSetting.ID.self)
-            
-            return Account.query(on: request).filter(\.id == accountID).count().flatMap(to: T.self) { count in
-                guard count > 0 else {
-                    throw Abort(.notFound, reason: "No account found with ID '\(accountID)'")
-                }
-                let query = AccountSetting.query(on: request).filter(\.accountID == accountID).filter(\.id == settingID)
-                return finishing(query, accountID, settingID)
-            }
-        }
+
+        let order = Order.query(on: request).filter(\.userID == user.id).filter(\.id == id).first().unwrap(or: Abort(.notFound))
+        return order.flatMap { try $0.response(on: request) }
     }
 }
