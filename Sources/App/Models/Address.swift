@@ -32,7 +32,6 @@ extension Address: MySQLModel {}
 extension Address {
     struct Response: Content {
         var street, street2, zip, city, country: String?
-        var shipping: Bool
         
         init(address: Address) {
             self.street = address.street
@@ -40,7 +39,6 @@ extension Address {
             self.zip = address.zip
             self.city = address.city
             self.country = address.country
-            self.shipping = address.shipping
         }
     }
     
