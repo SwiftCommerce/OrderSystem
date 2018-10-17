@@ -9,6 +9,7 @@ struct AddressContent: Content {
     var street2: String?
     var zip: String?
     var city: String?
+    var state: String?
     var country: String?
     
     func save(on conn: DatabaseConnectable, order: Order.ID, isShipping: Bool) -> Future<Address> {
@@ -18,6 +19,7 @@ struct AddressContent: Content {
             street2: self.street2,
             zip: self.zip,
             city: self.city,
+            state: self.state,
             country: self.country,
             shipping: isShipping
         )
