@@ -39,14 +39,9 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     services.register(databaseConfig)
 
     /// Configure migrations
-    var migrations = MigrationConfig()
-    migrations.add(model: Order.self, database: .mysql)
-    migrations.add(model: Item.self, database: .mysql)
-    migrations.add(model: Address.self, database: .mysql)
-    migrations.add(model: Order.Payment.self, database: .mysql)
-    migrations.add(model: Account.self, database: .mysql)
-    migrations.add(model: AccountSetting.self, database: .mysql)
-    services.register(migrations)
+    var migrationConfig = MigrationConfig()
+    try migrations(config: &migrationConfig)
+    services.register(migrationConfig)
 
     /// Configure controllers for making payments with third-party payment providers (i.e. PayPal or Stripe).
     var controllers = PaymentControllers(root: any, "orders")
