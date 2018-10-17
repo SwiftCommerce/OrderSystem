@@ -80,30 +80,6 @@ final class OrderController: RouteCollection {
     }
 }
 
-struct OrderContent: Content {
-    var currency: String
-    var accountID: Int?
-    var comment: String?
-    var firstname: String?
-    var lastname: String?
-    var company: String?
-    var email: String?
-    var phone: String?
-    var addresses: OrderAddress?
-    var items: [ItemContent]?
-    
-    func populate(order: Order) {
-        order.currency = self.currency
-        order.accountID = self.accountID
-        order.comment = self.comment
-        order.firstname = self.firstname
-        order.lastname = self.lastname
-        order.company = self.company
-        order.email = self.email
-        order.phone = self.phone
-    }
-}
-
 struct ItemContent: Content {
     let sku: String
     let name: String
