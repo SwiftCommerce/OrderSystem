@@ -33,7 +33,9 @@ final class OrderController: RouteCollection {
     }
     
     func all(_ request: Request)throws -> Future<[Order.Response]> {
-        let user:User = try request.get("skelpo-payload")!
+        guard let user = try request.get("skelpo-payload", as: User.self) else {
+            throw Abort(.unauthorized, reason: "You must be logged into your account to view past orders.")
+        }
         return try Order.query(on: request).filter(\.userID == user.id).all().response(on: request)
     }
     
