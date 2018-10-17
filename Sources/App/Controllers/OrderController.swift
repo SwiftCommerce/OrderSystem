@@ -79,35 +79,3 @@ final class OrderController: RouteCollection {
         }
     }
 }
-
-struct AddressContent: Content {
-    var street: String?
-    var street2: String?
-    var zip: String?
-    var city: String?
-    var country: String?
-    
-    func save(on conn: DatabaseConnectable, order: Order.ID, isShipping: Bool) -> Future<Address> {
-        let address = Address(
-            order: order,
-            street: self.street,
-            street2: self.street2,
-            zip: self.zip,
-            city: self.city,
-            country: self.country,
-            shipping: isShipping
-        )
-        return address.save(on: conn)
-    }
-}
-
-struct OrderAddress: Content {
-    let shipping: AddressContent?
-    let billing: AddressContent?
-
-    func save(on conn: DatabaseConnectable, order: Order.ID) -> Future<Void> {
-        let shipping = self.shipping?.save(on: conn, order: order, isShipping: true).transform(to: ()) ?? conn.future()
-        let billing = self.billing?.save(on: conn, order: order, isShipping: false).transform(to: ()) ?? conn.future()
-        return map(shipping, billing) { _, _ in return () }
-    }
-}
