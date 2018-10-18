@@ -14,10 +14,10 @@ extension Order.Payment: ExecutablePayment {
 
 extension Order.Payment: PayPalPaymentRepresentable {
     func paypal(on conn: DatabaseConnectable) -> Future<PayPal.Payment> {
+        let currency = Currency(code: self.currency) ?? .usd
         let shipping = Address.query(on: conn).filter(\.orderID == self.orderID).filter(\.shipping == true).first()
         let items = Item.query(on: conn).filter(\.orderID == self.orderID).all()
         let order = Order.query(on: conn).filter(\.id == self.orderID).first()
-        
         
         return map(shipping, items, order) { shipping, items, order -> PayPal.Payment in
             let address: PayPal.Address?
@@ -42,12 +42,12 @@ extension Order.Payment: PayPalPaymentRepresentable {
             let listItems = try items.map { item in
                 return try PayPal.Payment.Item(
                     quantity: String(describing: item.quantity),
-                    price: String(describing: item.price),
-                    currency: Currency(code: self.currency) ?? .usd,
+                    price: currency.amount(for: item.price),
+                    currency: currency,
                     sku: item.sku,
                     name: item.name,
                     description: item.description,
-                    tax: String(describing: item.tax)
+                    tax: currency.amount(for: item.tax)
                 )
             }
             let list = try PayPal.Payment.ItemList(items: listItems, address: address, phoneNumber: nil)
@@ -57,19 +57,19 @@ extension Order.Payment: PayPalPaymentRepresentable {
             let tax = items.map { item in item.tax }.reduce(0, +)
             
             let details = try DetailedAmount.Detail(
-                subtotal: String(describing: subtotal),
-                shipping: String(describing: self.shipping),
-                tax: String(describing: tax),
-                handlingFee: String(describing: self.handling),
-                shippingDiscount: String(describing: self.shippingDiscount),
-                insurance: String(describing: self.insurence),
-                giftWrap: String(describing: self.giftWrap)
+                subtotal: currency.amount(for: subtotal),
+                shipping: currency.amount(for: self.shipping),
+                tax: currency.amount(for: tax),
+                handlingFee: currency.amount(for: self.handling),
+                shippingDiscount: currency.amount(for: self.shippingDiscount),
+                insurance: currency.amount(for: self.insurence),
+                giftWrap: currency.amount(for: self.giftWrap)
             )
             
             let total = subtotal + tax
             let amount = try DetailedAmount(
                 currency: Currency(code: self.currency) ?? .usd,
-                total: String(describing: total),
+                total: currency.amount(for: total),
                 details: details
             )
             
