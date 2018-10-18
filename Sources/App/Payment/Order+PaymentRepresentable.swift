@@ -28,11 +28,13 @@ extension Order: PaymentRepresentable {
         externalID: ID?
     ) -> EventLoopFuture<Order.Payment> where Method : PaymentMethod {
         return container.databaseConnection(to: .mysql).flatMap { connection in
+            return self.total(with: connection).and(result: connection)
+        }.flatMap { total, connection in
             let payment = try Order.Payment(
                 orderID: self.requireID(),
                 paymentMethod: Method.slug,
                 currency: content.currency,
-                subtotal: 0,
+                subtotal: total,
                 paid: self.paidTotal,
                 refunded: self.refundedTotal
             )
