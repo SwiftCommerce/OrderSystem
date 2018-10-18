@@ -24,19 +24,26 @@ extension Order: PaymentRepresentable {
     func payment<Method, ID>(
         on container: Container,
         with method: Method,
+        content: PaymentGenerationContent,
         externalID: ID?
     ) -> EventLoopFuture<Order.Payment> where Method : PaymentMethod {
         return container.databaseConnection(to: .mysql).flatMap { connection in
             let payment = try Order.Payment(
                 orderID: self.requireID(),
                 paymentMethod: Method.slug,
-                currency: self.currency,
-                paidTotal: self.paidTotal,
-                refundedTotal: self.refundedTotal
+                currency: content.currency,
+                subtotal: 0,
+                paid: self.paidTotal,
+                refunded: self.refundedTotal
             )
             if let external = externalID {
                 payment.externalID = String(describing: external)
             }
+            payment.shipping = content.shipping
+            payment.handling = content.handling
+            payment.shippingDiscount = content.shippingDiscount
+            payment.insurence = content.insurence
+            payment.giftWrap = content.giftWrap
             
             return payment.save(on: connection)
         }
