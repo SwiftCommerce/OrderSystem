@@ -5,7 +5,6 @@ import Vapor
 /// This type is decoded from the request body in the `OrderController.create` route handler
 /// to create the `Order` model instance that will be saved.
 struct OrderContent: Content {
-    var currency: String
     var accountID: Int?
     var comment: String?
     var firstname: String?
@@ -17,7 +16,6 @@ struct OrderContent: Content {
     var items: [ItemContent]?
     
     func populate(order: Order) {
-        order.currency = self.currency
         order.accountID = self.accountID
         order.comment = self.comment
         order.firstname = self.firstname

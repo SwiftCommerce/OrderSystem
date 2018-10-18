@@ -11,7 +11,6 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var paymentStatus: Order.PaymentStatus
     var paidTotal: Int
     var refundedTotal: Int
-    var currency: String
     
     var userID: Int?
     var accountID: Int?
@@ -30,7 +29,6 @@ final class Order: Content, MySQLModel, Migration, Parameter {
         self.paymentStatus = .open
         self.paidTotal = 0
         self.refundedTotal = 0
-        self.currency = "USD"
     }
     
     var guest: Bool { return self.userID == nil }
