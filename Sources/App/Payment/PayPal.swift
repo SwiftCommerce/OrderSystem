@@ -12,12 +12,25 @@ extension Order.Payment: ExecutablePayment {
     }
 }
 
-extension Order.Payment: PayPalPaymentRepresentable {
-    func paypal(on conn: DatabaseConnectable) -> Future<PayPal.Payment> {
-        let currency = Currency(code: self.currency) ?? .usd
-        let shipping = Address.query(on: conn).filter(\.orderID == self.orderID).filter(\.shipping == true).first()
-        let items = Item.query(on: conn).filter(\.orderID == self.orderID).all()
-        let order = Order.query(on: conn).filter(\.id == self.orderID).first()
+extension Order: PayPalPaymentRepresentable {
+    func paypal(on container: Container, content: PaymentGenerationContent) -> EventLoopFuture<PayPal.Payment> {
+        return container.databaseConnection(to: Order.defaultDatabase).flatMap { connection in
+            return self.paypal(on: connection, content: content)
+        }
+    }
+    
+    func paypal(on conn: DatabaseConnectable, content: PaymentGenerationContent) -> Future<PayPal.Payment> {
+        let id: Order.ID
+        do {
+            id = try self.requireID()
+        } catch let error {
+            return conn.future(error: error)
+        }
+        
+        let currency = Currency(code: content.currency) ?? .usd
+        let shipping = Address.query(on: conn).filter(\.orderID == id).filter(\.shipping == true).first()
+        let items = Item.query(on: conn).filter(\.orderID == id).all()
+        let order = Order.query(on: conn).filter(\.id == id).first()
         
         return map(shipping, items, order) { shipping, items, order -> PayPal.Payment in
             let address: PayPal.Address?
@@ -58,17 +71,17 @@ extension Order.Payment: PayPalPaymentRepresentable {
             
             let details = try DetailedAmount.Detail(
                 subtotal: currency.amount(for: subtotal),
-                shipping: currency.amount(for: self.shipping),
+                shipping: currency.amount(for: content.shipping),
                 tax: currency.amount(for: tax),
-                handlingFee: currency.amount(for: self.handling),
-                shippingDiscount: currency.amount(for: self.shippingDiscount),
-                insurance: currency.amount(for: self.insurence),
-                giftWrap: currency.amount(for: self.giftWrap)
+                handlingFee: currency.amount(for: content.handling),
+                shippingDiscount: currency.amount(for: content.shippingDiscount),
+                insurance: currency.amount(for: content.insurence),
+                giftWrap: currency.amount(for: content.giftWrap)
             )
             
             let total = subtotal + tax
             let amount = try DetailedAmount(
-                currency: Currency(code: self.currency) ?? .usd,
+                currency: currency,
                 total: currency.amount(for: total),
                 details: details
             )
