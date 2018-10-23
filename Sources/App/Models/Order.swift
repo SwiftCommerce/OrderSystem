@@ -35,17 +35,18 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     
     func total(with executor: DatabaseConnectable) -> Future<Int> {
         return Future.flatMap(on: executor) {
-            return try Item.query(on: executor).filter(\.orderID == self.requireID()).all().map(to: Int.self) { items in
+            return try self.items(with: executor).map(to: Int.self) { items in
                 return items.reduce(0) { $0 + $1.total }
             }
         }
     }
     
     func tax(with executor: DatabaseConnectable) -> Future<Int> {
-        return executor.eventLoop.newSucceededFuture(result: 0)
-/*        return Future.flatMap(on: executor) {
-            return try Item.query(on: executor).filter(\.orderID == self.requireID()).sum(\.tax)
-        }.map(to: Int.self) { Int($0) }*/
+        return Future.flatMap(on: executor) {
+            return try self.items(with: executor).map(to: Int.self) { items in
+                return items.reduce(0) { $0 + $1.tax }
+            }
+        }
     }
     
     func items(with executor: DatabaseConnectable)throws -> Future<[Item]> {
@@ -84,7 +85,7 @@ extension Future where T == [Order] {
 }
 
 extension Order {
-    struct Response: Content {
+    struct Response: Vapor.Content {
         var id, userID: Int?
         var comment: String?
         var status: Order.Status
