@@ -79,7 +79,8 @@ extension Order: PayPalPaymentRepresentable {
                 giftWrap: currency.amount(for: content.giftWrap)
             )
             
-            let total = subtotal + tax
+            let fees = content.shipping + content.handling + content.shippingDiscount + content.insurence + content.giftWrap
+            let total = subtotal + tax + (fees ?? 0)
             let amount = try DetailedAmount(
                 currency: currency,
                 total: currency.amount(for: total),
