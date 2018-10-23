@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "Cgd",
+        "repositoryURL": "https://github.com/twostraws/Cgd.git",
+        "state": {
+          "branch": null,
+          "revision": "2e370814715c3557bb1cbdcd96e610ce29e83e45",
+          "version": "0.2.0"
+        }
+      },
+      {
         "package": "Console",
         "repositoryURL": "https://github.com/vapor/console.git",
         "state": {
@@ -51,8 +60,8 @@
         "repositoryURL": "https://github.com/vapor/fluent.git",
         "state": {
           "branch": null,
-          "revision": "270b6fa372f03809b9795e8f8b9d1c31267a0ff3",
-          "version": "3.0.0"
+          "revision": "dc258fe53880f80508df317df3c903ee2c2b9317",
+          "version": "3.1.0"
         }
       },
       {
@@ -74,6 +83,15 @@
         }
       },
       {
+        "package": "JSON",
+        "repositoryURL": "https://github.com/skelpo/JSON.git",
+        "state": {
+          "branch": null,
+          "revision": "59167bee35bfeb588d76f54b6fd50d797d3be980",
+          "version": "0.13.1"
+        }
+      },
+      {
         "package": "JWT",
         "repositoryURL": "https://github.com/vapor/jwt.git",
         "state": {
@@ -87,8 +105,8 @@
         "repositoryURL": "https://github.com/skelpo/JWTMiddleware.git",
         "state": {
           "branch": null,
-          "revision": "7f176b3328c644a9f3802a7e39c325e7518f5c66",
-          "version": "0.8.1"
+          "revision": "696b3ea49a4548484d28f79cc2c8bd10751ccb27",
+          "version": "0.8.2"
         }
       },
       {
@@ -116,6 +134,15 @@
           "branch": null,
           "revision": "355fdc8c60a4869026ff8f19e21f5d5bdbb08e62",
           "version": "3.1.0"
+        }
+      },
+      {
+        "package": "PayPal",
+        "repositoryURL": "https://github.com/skelpo/PayPal.git",
+        "state": {
+          "branch": null,
+          "revision": "176d5065145d82458b98cee268cc01bf6ebe9aec",
+          "version": "0.1.0"
         }
       },
       {
@@ -150,8 +177,8 @@
         "repositoryURL": "https://github.com/vapor-community/stripe-provider.git",
         "state": {
           "branch": null,
-          "revision": "20c35dabd901c02bc7ad5fffd47f7a8e34595cbc",
-          "version": "2.2.1"
+          "revision": "f153cfe204ef92265d94eb66f2fcf6cf2b0ced13",
+          "version": "2.2.4"
         }
       },
       {
@@ -191,6 +218,15 @@
         }
       },
       {
+        "package": "SwiftGD",
+        "repositoryURL": "https://github.com/twostraws/SwiftGD.git",
+        "state": {
+          "branch": null,
+          "revision": "b038d13ef40ce6d11aa3599181e45f099814a053",
+          "version": "2.2.0"
+        }
+      },
+      {
         "package": "TemplateKit",
         "repositoryURL": "https://github.com/vapor/template-kit.git",
         "state": {
@@ -204,8 +240,26 @@
         "repositoryURL": "https://github.com/skelpo/Transaction.git",
         "state": {
           "branch": null,
-          "revision": "f21b72356ea0cdb1cf06b98fde65cab60222c05f",
-          "version": "0.3.0"
+          "revision": "ad0d3f69c76aec75372fa472576ea46a01524b2e",
+          "version": "0.5.0"
+        }
+      },
+      {
+        "package": "TransactionPayPal",
+        "repositoryURL": "https://github.com/skelpo/TransactionPayPal.git",
+        "state": {
+          "branch": null,
+          "revision": "1ff1b0178dafdc60e89bd2fa94aa5bccf4ddb649",
+          "version": "0.1.0"
+        }
+      },
+      {
+        "package": "TransactionStripe",
+        "repositoryURL": "https://github.com/skelpo/TransactionStripe.git",
+        "state": {
+          "branch": null,
+          "revision": "5f8057651d379b5b7e508038f4a8fa8365f7e31c",
+          "version": "0.2.0"
         }
       },
       {
@@ -249,8 +303,8 @@
         "repositoryURL": "https://github.com/vapor/websocket.git",
         "state": {
           "branch": null,
-          "revision": "149af03348f60ac8b84defdf277112d62fd8c704",
-          "version": "1.0.2"
+          "revision": "eb4277f75f1d96a3d15c852cdd89af1799093dcd",
+          "version": "1.1.0"
         }
       }
     ]
