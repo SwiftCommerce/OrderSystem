@@ -27,9 +27,13 @@ extension Order: PaymentRepresentable {
         content: PaymentGenerationContent,
         externalID: ID?
     ) -> EventLoopFuture<Order.Payment> where Method : PaymentMethod {
-        return container.databaseConnection(to: .mysql).flatMap { connection in
-            return self.total(with: connection).and(result: connection)
-        }.flatMap { total, connection in
+        return container.databaseConnection(to: .mysql).flatMap { connection -> Future<(Int, Int, Order.Database.Connection)> in
+            let total = self.total(with: connection)
+            let tax = self.tax(with: connection)
+            return map(total, tax) { return ($0, $1, connection) }
+        }.flatMap { requiredInfo -> Future<Order.Payment> in
+            let (total, tax, connection) = requiredInfo
+            
             let payment = try Order.Payment(
                 orderID: self.requireID(),
                 paymentMethod: Method.slug,
@@ -41,6 +45,7 @@ extension Order: PaymentRepresentable {
             if let external = externalID {
                 payment.externalID = String(describing: external)
             }
+            payment.tax = tax
             payment.shipping = content.shipping
             payment.handling = content.handling
             payment.shippingDiscount = content.shippingDiscount
