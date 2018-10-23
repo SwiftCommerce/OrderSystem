@@ -18,6 +18,7 @@ extension Order {
         var refunded: Int
         
         var subtotal: Int
+        var tax: Int?
         var shipping: Int?
         var handling: Int?
         var shippingDiscount: Int?
