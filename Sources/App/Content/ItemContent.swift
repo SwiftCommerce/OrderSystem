@@ -8,8 +8,9 @@ struct ItemContent: Content {
     let sku: String
     let name: String
     let description: String?
-    var price: Int
-    var quantity: Int
+    let price: Int
+    let quantity: Int
+    let taxRate: Decimal
     
     func save(on conn: DatabaseConnectable, order: Order.ID) -> Future<Item> {
         let item = Item(
@@ -18,7 +19,8 @@ struct ItemContent: Content {
             name: self.name,
             description: self.description,
             price: self.price,
-            quantity: self.quantity
+            quantity: self.quantity,
+            taxRate: self.taxRate
         )
         return item.save(on: conn)
     }
