@@ -66,7 +66,7 @@ extension Order: PayPalPaymentRepresentable {
             let list = try PayPal.Payment.ItemList(items: listItems, address: address, phoneNumber: nil)
             
             
-            let subtotal = items.map { item in item.price * item.quantity }.reduce(0, +)
+            let subtotal = items.map { item in item.total }.reduce(0, +)
             let tax = items.map { item in item.tax }.reduce(0, +)
             
             let details = try DetailedAmount.Detail(
