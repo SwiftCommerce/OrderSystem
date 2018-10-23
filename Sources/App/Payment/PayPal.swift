@@ -8,7 +8,7 @@ typealias PayPalController = PaymentController<PayPalPayment>
 extension Order.Payment: ExecutablePayment {
     var total: Int {
         let fees: Int? = self.tax + self.shipping + self.handling + self.shippingDiscount + self.insurence + self.giftWrap
-        return self.subtotal + fees ?? 0
+        return self.subtotal + (fees ?? 0)
     }
 }
 
