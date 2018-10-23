@@ -5,7 +5,7 @@ import Vapor
 public func boot(_ app: Application) throws {
     
     // If in a development environment, create and log a JWT token to use for testing the service with.
-    if !app.environment.isRelease {
+    if !app.environment.isRelease && app.environment != Environment.testing {
         let signer = try app.make(JWTService.self)
         
         let now = Date().timeIntervalSince1970
