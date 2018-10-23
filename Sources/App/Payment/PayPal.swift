@@ -15,11 +15,12 @@ extension Order.Payment: ExecutablePayment {
 extension Order: PayPalPaymentRepresentable {
     func paypal(on container: Container, content: PaymentGenerationContent) -> EventLoopFuture<PayPal.Payment> {
         return container.databaseConnection(to: Order.defaultDatabase).flatMap { connection in
-            return self.paypal(on: connection, content: content)
+            let config = try container.make(GlobalConfig.self)
+            return self.paypal(on: connection, content: content, config: config)
         }
     }
     
-    func paypal(on conn: DatabaseConnectable, content: PaymentGenerationContent) -> Future<PayPal.Payment> {
+    func paypal(on conn: DatabaseConnectable, content: PaymentGenerationContent, config: GlobalConfig) -> Future<PayPal.Payment> {
         let id: Order.ID
         do {
             id = try self.requireID()
@@ -89,7 +90,7 @@ extension Order: PayPalPaymentRepresentable {
             
             let transaction = try PayPal.Payment.Transaction(
                 amount: amount,
-                payee: Payee(email: "placeholder@example.com", merchant: nil, metadata: nil),
+                payee: Payee(email: config.paypalPayeeEmail, merchant: nil, metadata: nil),
                 description: nil,
                 payeeNote: nil,
                 custom: nil,
@@ -107,7 +108,7 @@ extension Order: PayPalPaymentRepresentable {
                 transactions: [transaction],
                 experience: nil,
                 payerNote: nil,
-                redirects: Redirects(return: "https://placeholder.com/success", cancel: "https://placeholder.com/fail")
+                redirects: Redirects(return: config.paypalRedirectApprove, cancel: config.paypalRedirectCancel)
             )
         }
     }
