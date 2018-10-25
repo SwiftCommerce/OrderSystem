@@ -258,8 +258,8 @@
         "repositoryURL": "https://github.com/skelpo/TransactionStripe.git",
         "state": {
           "branch": null,
-          "revision": "5f8057651d379b5b7e508038f4a8fa8365f7e31c",
-          "version": "0.2.0"
+          "revision": "b3cff7234b145a128ee03e12810d9604564f45ad",
+          "version": "0.2.1"
         }
       },
       {

@@ -6,7 +6,7 @@ let package = Package(
     name: "OrderSystem",
     dependencies: [
         .package(url: "https://github.com/skelpo/Transaction.git", from: "0.5.0"),
-        .package(url: "https://github.com/skelpo/TransactionStripe.git", from: "0.2.0"),
+        .package(url: "https://github.com/skelpo/TransactionStripe.git", from: "0.2.1"),
         .package(url: "https://github.com/skelpo/TransactionPayPal.git", from: "0.1.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
         .package(url: "https://github.com/vapor/fluent-mysql.git", from: "3.0.0"),
