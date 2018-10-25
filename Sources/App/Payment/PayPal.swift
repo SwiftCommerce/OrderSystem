@@ -7,7 +7,8 @@ typealias PayPalController = PaymentController<PayPalPayment>
 
 extension Order.Payment: ExecutablePayment {
     var total: Int {
-        let fees: Int? = self.tax + self.shipping + self.handling + self.shippingDiscount + self.insurence + self.giftWrap
+        let shipping: Int? = (self.shipping ?? 0) - (self.shippingDiscount ?? 0)
+        let fees: Int? = self.tax + self.handling + shipping + self.insurence + self.giftWrap
         return self.subtotal + (fees ?? 0)
     }
 }
@@ -80,7 +81,8 @@ extension Order: PayPalPaymentRepresentable {
                 giftWrap: currency.amount(for: content.giftWrap)
             )
             
-            let fees = content.shipping + content.handling + content.shippingDiscount + content.insurence + content.giftWrap
+            let shipping: Int? = (content.shipping ?? 0) - (content.shippingDiscount ?? 0)
+            let fees = shipping + content.handling + content.insurence + content.giftWrap
             let total = subtotal + tax + (fees ?? 0)
             let amount = try DetailedAmount(
                 currency: currency,
