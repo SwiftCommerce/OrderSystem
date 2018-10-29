@@ -104,10 +104,11 @@ extension Order {
             token = bearer.token
         } else {
             let signer = try request.make(JWTService.self)
+            let email = (try? request.content.syncGet(String.self, at: "email")) ?? "guest" + UUID().uuidString + "@ordersystem.example.com"
             let user = User(
                 exp: Date.distantFuture.timeIntervalSince1970,
                 iat: Date().timeIntervalSince1970,
-                email: "guest" + UUID().uuidString + "@ordersystem.example.com",
+                email: email,
                 id: nil
             )
             token = try signer.sign(user)
