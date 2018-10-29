@@ -1,4 +1,5 @@
 import Transaction
+import JWTVapor
 import Service
 import Fluent
 import Vapor
@@ -58,6 +59,11 @@ extension Order: PaymentRepresentable {
     
     func fetchPayment(on container: Container) -> EventLoopFuture<Order.Payment> {
         return container.databaseConnection(to: .mysql).flatMap { connection in
+            if let request = container as? Request {
+                guard let user = try request.get("skelpo-payload", as: User.self) else { throw Abort(.unauthorized) }
+                guard self.email == user.email else { throw Abort(.notFound) }
+            }
+            
             let id = try self.requireID()
             let error = Abort(.notFound, reason: "No order payment found for order with ID '" + String(describing: id) +  "'")
             return Order.Payment.query(on: connection).filter(\.orderID == id).first().unwrap(or: error)
