@@ -4,11 +4,12 @@ import Vapor
 
 final class OrderController: RouteCollection {
     func boot(router: Router) throws {
-        let orderRoute = router.grouped(JWTVerificationMiddleware()).grouped("orders")
+        let orders = router.grouped("orders")
+        let protected = orders.grouped(JWTStorageMiddleware<User>())
         
-        orderRoute.post(OrderContent.self, use: create)
-        orderRoute.get(use: all)
-        orderRoute.get(Order.parameter, use: get)
+        orders.post(OrderContent.self, use: create)
+        protected.get(use: all)
+        protected.get(Order.parameter, use: get)
     }
     
     func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
@@ -34,7 +35,10 @@ final class OrderController: RouteCollection {
         guard let user = try request.get("skelpo-payload", as: User.self) else {
             throw Abort(.unauthorized, reason: "You must be logged into your account to view past orders.")
         }
-        return try Order.query(on: request).filter(\.userID == user.id).all().response(on: request)
+        guard let id = user.id else {
+            throw Abort(.unauthorized, reason: "You must be logged in to access your order history.")
+        }
+        return try Order.query(on: request).filter(\.userID == id).all().response(on: request)
     }
     
     
@@ -42,7 +46,8 @@ final class OrderController: RouteCollection {
         guard
             let user = try request.get("skelpo-payload", as: User.self),
             let rawID = request.parameters.rawValues(for: Order.self).first,
-            let id = Int(rawID)
+            let id = Int(rawID),
+            user.id != nil
         else {
             throw Abort(.notFound)
         }

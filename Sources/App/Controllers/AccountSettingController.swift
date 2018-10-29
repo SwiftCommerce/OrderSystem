@@ -4,7 +4,7 @@ import Vapor
 
 final class AccountSettingController: RouteCollection {
     func boot(router: Router) throws {
-        let settings = router.grouped(JWTVerificationMiddleware()).grouped("orders", "account", Account.parameter, "settings")
+        let settings = router.grouped(JWTStorageMiddleware<User>()).grouped("orders", "account", Account.parameter, "settings")
         
         settings.post(AccountSettingContent.self, use: create)
         settings.get(use: all)

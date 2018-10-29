@@ -1,4 +1,5 @@
 import FluentMySQL
+import JWTVapor
 import Vapor
 
 final class Order: Content, MySQLModel, Migration, Parameter {
@@ -87,7 +88,7 @@ extension Future where T == [Order] {
 extension Order {
     struct Response: Vapor.Content {
         var id, userID: Int?
-        var comment: String?
+        var comment, authToken: String?
         var status: Order.Status
         var paymentStatus: Order.PaymentStatus
         var paidTotal, refundedTotal, total, tax: Int
@@ -98,6 +99,20 @@ extension Order {
     }
     
     func response(on request: Request)throws -> Future<Response> {
+        let token: String
+        if let bearer = request.http.headers.bearerAuthorization {
+            token = bearer.token
+        } else {
+            let signer = try request.make(JWTService.self)
+            let user = User(
+                exp: Date.distantFuture.timeIntervalSince1970,
+                iat: Date().timeIntervalSince1970,
+                email: "guest" + UUID().uuidString + "@ordersystem.example.com",
+                id: nil
+            )
+            token = try signer.sign(user)
+        }
+        
         return try map(
             self.total(with: request),
             self.tax(with: request),
@@ -106,7 +121,7 @@ extension Order {
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
         ) { total, tax, items, shipping, billing in
             return Response(
-                id: self.id, userID: self.userID, comment: self.comment, status: self.status, paymentStatus: self.paymentStatus,
+                id: self.id, userID: self.userID, comment: self.comment, authToken: token, status: self.status, paymentStatus: self.paymentStatus,
                 paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest,
                 items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
             )
