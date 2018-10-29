@@ -16,8 +16,10 @@ final class OrderController: RouteCollection {
         let order = Order()
         let user: User? = try request.get("skelpo-payload")
         
-        order.userID = user?.id
         content.populate(order: order)
+        order.userID = user?.id
+        order.email = order.email == nil ? user?.email : order.email
+        
         let saved = order.save(on: request)
 
         return saved.flatMap { order -> Future<Order> in
