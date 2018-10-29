@@ -10,7 +10,7 @@ struct User: IdentifiableJWTPayload {
     
     // These two are to be customized according to what is in the JWT
     let email: String
-    let id: Int
+    let id: Int?
     
     
     func verify(using signer: JWTSigner) throws {
