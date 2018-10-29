@@ -51,6 +51,7 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     
     /// Configure controllers for making payments with third-party payment providers (i.e. PayPal or Stripe).
     var controllers = PaymentControllers(root: any, "orders")
+    controllers.middleware(JWTVerificationMiddleware())
     controllers.add(PayPalController(structure: .separate))
     controllers.add(StripeController(structure: .mixed))
     services.register(controllers)
