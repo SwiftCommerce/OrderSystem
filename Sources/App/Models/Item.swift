@@ -3,28 +3,21 @@ import FluentMySQL
 import Vapor
 
 final class Item: Content, MySQLModel, Migration {
+    typealias ProductID = Int
+    
     var id: Int?
 
     let orderID: Int
-    let sku: String
-    let name: String
-    let description: String?
-    var price: Int
+    let productID: ProductID
+    let taxRate: Decimal
+    
     var quantity: Int
-    var taxRate: Decimal
     
-    var total: Int { return price * quantity }
-    var totalWithTax: Int { return total + tax }
-    var tax: Int { return NSDecimalNumber(decimal: Decimal(total) * (taxRate / 100)).intValue }
-    
-    init(orderID: Int, sku: String, name: String, description: String?, price: Int, quantity: Int, taxRate: Decimal) {
+    init(orderID: Int, productID: ProductID, quantity: Int, taxRate: Decimal) {
         self.orderID = orderID
-        self.sku = sku
-        self.name = name
-        self.description = description
-        self.price = price
-        self.quantity = quantity
+        self.productID = productID
         self.taxRate = taxRate
+        self.quantity = quantity
     }
     
     public static func prepare(on connection: MySQLConnection) -> Future<Void> {
@@ -39,28 +32,20 @@ final class Item: Content, MySQLModel, Migration {
 
 extension Item {
     struct Response: Content {
-        let orderID, price, quantity, tax, total, totalWithTax: Int
+        let orderID, quantity: Int
+        let productID: ProductID
         let taxRate: Decimal
-        let sku, name: String
-        let description: String?
     }
     struct OrderResponse: Content {
-        let price, quantity, tax, total, totalWithTax: Int
+        let quantity: Int
+        let productID: ProductID
         let taxRate: Decimal
-        let sku, name: String
-        let description: String?
-    }
-    var orderResponse: OrderResponse {
-        return OrderResponse(
-            price: self.price, quantity: self.quantity, tax: self.tax, total: self.total, totalWithTax: self.totalWithTax, taxRate: self.taxRate,
-            sku: self.sku, name: self.name, description: self.description
-        )
     }
     
     var response: Response {
-        return Response(
-            orderID: self.orderID, price: self.price, quantity: self.quantity, tax: self.tax, total: self.total, totalWithTax: self.totalWithTax,
-            taxRate: self.taxRate, sku: self.sku, name: self.name, description: self.description
-        )
+        return Response(orderID: self.orderID, quantity: self.quantity, productID: self.productID, taxRate: self.taxRate)
+    }
+    var orderResponse: OrderResponse {
+        return OrderResponse(quantity: self.quantity, productID: self.productID, taxRate: self.taxRate)
     }
 }
