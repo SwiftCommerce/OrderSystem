@@ -88,7 +88,7 @@ extension Future where T == [Order] {
 extension Order {
     struct Response: Vapor.Content {
         var id, userID: Int?
-        var comment, authToken: String?
+        var comment, authToken, firstname, lastname, company, email, phone: String?
         var status: Order.Status
         var paymentStatus: Order.PaymentStatus
         var paidTotal, refundedTotal, total, tax: Int
@@ -122,7 +122,8 @@ extension Order {
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
         ) { total, tax, items, shipping, billing in
             return Response(
-                id: self.id, userID: self.userID, comment: self.comment, authToken: token, status: self.status, paymentStatus: self.paymentStatus,
+                id: self.id, userID: self.userID, comment: self.comment, authToken: token, firstname: self.firstname, lastname: self.lastname,
+                company: self.company, email: self.email, phone: self.phone, status: self.status, paymentStatus: self.paymentStatus,
                 paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest,
                 items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
             )
