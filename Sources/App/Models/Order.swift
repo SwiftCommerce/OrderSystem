@@ -121,9 +121,10 @@ extension Order {
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
         ) { total, tax, items, shipping, billing in
+            let email = self.email?.hasSuffix("ordersystem.example.com") ?? false ? nil : self.email
             return Response(
                 id: self.id, userID: self.userID, comment: self.comment, authToken: token, firstname: self.firstname, lastname: self.lastname,
-                company: self.company, email: self.email, phone: self.phone, status: self.status, paymentStatus: self.paymentStatus,
+                company: self.company, email: email, phone: self.phone, status: self.status, paymentStatus: self.paymentStatus,
                 paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest,
                 items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
             )
