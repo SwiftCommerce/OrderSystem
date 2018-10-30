@@ -18,7 +18,12 @@ final class OrderController: RouteCollection {
         
         content.populate(order: order)
         order.userID = user?.id
-        order.email = order.email == nil ? user?.email : order.email
+        if let email = user?.email {
+            order.email = email
+        } else {
+            let prefix = order.guest ? "guest" : "user"
+            order.email = prefix + UUID().uuidString + "@ordersystem.example.com"
+        }
         
         let saved = order.save(on: request)
 

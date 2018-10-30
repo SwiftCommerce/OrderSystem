@@ -10,7 +10,6 @@ struct OrderContent: Content {
     var firstname: String?
     var lastname: String?
     var company: String?
-    var email: String?
     var phone: String?
     var addresses: OrderAddress?
     var items: [ItemContent]?
@@ -21,7 +20,6 @@ struct OrderContent: Content {
         order.firstname = self.firstname
         order.lastname = self.lastname
         order.company = self.company
-        order.email = self.email
         order.phone = self.phone
     }
 }
