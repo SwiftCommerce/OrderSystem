@@ -18,3 +18,13 @@ struct ProductManager: ServiceType {
         }
     }
 }
+
+extension Container {
+    func product(for id: Item.ProductID) -> Future<Product> {
+        do {
+            return try self.make(ProductManager.self).product(for: id)
+        } catch let error {
+            return self.future(error: error)
+        }
+    }
+}
