@@ -6,4 +6,15 @@ struct ProductManager: ServiceType {
     }
     
     let container: Container
+    let uri: String = "http://localhost:8001/v1/products"
+    
+    func product(for id: Item.ProductID) -> Future<Product> {
+        do {
+            return try self.container.client().get(uri + "/" + String(describing: id)).flatMap { response in
+                return try response.content.decode(Product.self)
+            }
+        } catch let error {
+            return self.container.future(error: error)
+        }
+    }
 }
