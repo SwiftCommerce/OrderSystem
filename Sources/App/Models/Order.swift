@@ -104,7 +104,7 @@ extension Order {
             token = bearer.token
         } else {
             let signer = try request.make(JWTService.self)
-            let email = (try? request.content.syncGet(String.self, at: "email")) ?? "guest" + UUID().uuidString + "@ordersystem.example.com"
+            guard let email = self.email else { throw Abort(.internalServerError, reason: "Failed to create unique ID email for payment token") }
             let user = User(
                 exp: Date.distantFuture.timeIntervalSince1970,
                 iat: Date().timeIntervalSince1970,
