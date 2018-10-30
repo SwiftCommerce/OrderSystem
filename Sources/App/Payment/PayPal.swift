@@ -16,12 +16,12 @@ extension Order.Payment: ExecutablePayment {
 extension Order: PayPalPaymentRepresentable {
     func paypal(on container: Container, content: PaymentGenerationContent) -> EventLoopFuture<PayPal.Payment> {
         return container.databaseConnection(to: Order.defaultDatabase).flatMap { connection in
-            let config = try container.make(GlobalConfig.self)
+            let config = try container.make(OrderService.self)
             return self.paypal(on: connection, content: content, config: config)
         }
     }
     
-    func paypal(on conn: DatabaseConnectable, content: PaymentGenerationContent, config: GlobalConfig) -> Future<PayPal.Payment> {
+    func paypal(on conn: DatabaseConnectable, content: PaymentGenerationContent, config: OrderService) -> Future<PayPal.Payment> {
         let id: Order.ID
         do {
             id = try self.requireID()

@@ -56,7 +56,7 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     controllers.add(StripeController(structure: .mixed))
     services.register(controllers)
     
-    services.register(GlobalConfig.self)
+    services.register(OrderService.self)
     
     services.register(Storage())
     services.register(PayPalPayment.self)
