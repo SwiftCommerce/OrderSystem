@@ -36,28 +36,20 @@ final class Order: Content, MySQLModel, Migration, Parameter {
 
     func total(on container: Container) -> Future<Int> {
         return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
-            return try self.items(with: conn).flatMap { items -> Future<Zip2Sequence<[Item], [Product]>> in
-                let products = container.products(for: items.map { $0.productID })
-                return products.map { zip(items, $0) }
-            }.map { products -> Int in
-                return products.reduce(0) { result, merch in
-                    let (item, product) = merch
-                    return result + item.total(for: product.price?.cents ?? 0)
-                }
+            return try self.items(with: conn).flatMap { items in
+                return container.products(for: items)
+            }.map { merch -> Int in
+                return merch.reduce(0) { $0 + $1.item.total(for: $1.product.price?.cents ?? 0) }
             }
         }
     }
 
     func tax(on container: Container) -> Future<Int> {
         return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
-            return try self.items(with: conn).flatMap { items -> Future<Zip2Sequence<[Item], [Product]>> in
-                let products = container.products(for: items.map { $0.productID })
-                return products.map { zip(items, $0) }
-            }.map { products -> Int in
-                return products.reduce(0) { result, merch in
-                    let (item, product) = merch
-                    return result + item.tax(for: product.price?.cents ?? 0)
-                }
+            return try self.items(with: conn).flatMap { items in
+                return container.products(for: items)
+            }.map { merch -> Int in
+                return merch.reduce(0) { $0 + $1.item.tax(for: $1.product.price?.cents ?? 0) }
             }
         }
     }

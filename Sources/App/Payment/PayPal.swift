@@ -38,18 +38,11 @@ extension Order: PayPalPaymentRepresentable {
         let shipping = Address.query(on: conn).filter(\.orderID == id).filter(\.shipping == true).first()
         let items = Item.query(on: conn).filter(\.orderID == id).all()
         let order = Order.query(on: conn).filter(\.id == id).first()
-        
         let products: Future<[Item.ID: Product]> = items.flatMap { items in
-            return container.products(for: items.map { $0.productID }).map { products in
-                return zip(items, products)
-            }
-        }.map { merch in
-            return merch.reduce(into: [:]) { store, pair in
-                let (item, product) = pair
-                if let id = item.id {
-                    store[id] = product
-                }
-            }
+            return container.products(for: items).map { items in items.reduce(into: [:]) { result, merch in
+                guard let id = merch.item.id else { return }
+                result[id] = merch.product
+            }}
         }
         
         return map(shipping, items, order, products) { shipping, items, order, products -> PayPal.Payment in
