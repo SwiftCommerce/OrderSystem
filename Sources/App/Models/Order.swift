@@ -7,23 +7,23 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var createdAt: Date?
     var updatedAt: Date?
     var deletedAt: Date?
-    
+
     var status: Order.Status
     var paymentStatus: Order.PaymentStatus
     var paidTotal: Int
     var refundedTotal: Int
-    
+
     var userID: Int?
     var accountID: Int?
     var comment: String?
-    
+
     var firstname: String?
     var lastname: String?
     var company: String?
     var email: String?
     var phone: String?
-    
-    
+
+
     /// This is the method called for new orders.
     init() {
         self.status = .open
@@ -31,27 +31,39 @@ final class Order: Content, MySQLModel, Migration, Parameter {
         self.paidTotal = 0
         self.refundedTotal = 0
     }
-    
+
     var guest: Bool { return self.userID == nil }
-    
-    func total(with executor: DatabaseConnectable) -> Future<Int> {
-        return Future.flatMap(on: executor) {
-            return try self.items(with: executor).map(to: Int.self) { items in
-                return items.reduce(0) { $0 + $1.total }
+
+    func total(on container: Container) -> Future<Int> {
+        return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
+            return try self.items(with: conn).flatMap { items -> Future<Zip2Sequence<[Item], [Product]>> in
+                let products = container.products(for: items.map { $0.productID })
+                return products.map { zip(items, $0) }
+            }.map { products -> Int in
+                return products.reduce(0) { result, merch in
+                    let (item, product) = merch
+                    return result + item.total(for: product.price?.cents ?? 0)
+                }
             }
         }
     }
-    
-    func tax(with executor: DatabaseConnectable) -> Future<Int> {
-        return Future.flatMap(on: executor) {
-            return try self.items(with: executor).map(to: Int.self) { items in
-                return items.reduce(0) { $0 + $1.tax }
+
+    func tax(on container: Container) -> Future<Int> {
+        return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
+            return try self.items(with: conn).flatMap { items -> Future<Zip2Sequence<[Item], [Product]>> in
+                let products = container.products(for: items.map { $0.productID })
+                return products.map { zip(items, $0) }
+            }.map { products -> Int in
+                return products.reduce(0) { result, merch in
+                    let (item, product) = merch
+                    return result + item.tax(for: product.price?.cents ?? 0)
+                }
             }
         }
     }
-    
-    func items(with executor: DatabaseConnectable)throws -> Future<[Item]> {
-        return try Item.query(on: executor).filter(\.orderID == self.requireID()).all()
+
+    func items(with conn: DatabaseConnectable)throws -> Future<[Item]> {
+        return try Item.query(on: conn).filter(\.orderID == self.requireID()).all()
     }
 }
 
@@ -59,25 +71,25 @@ extension Order {
     static var createdAtKey: WritableKeyPath<Order, Date?> {
         return \.createdAt
     }
-    
+
     static var updatedAtKey: WritableKeyPath<Order, Date?> {
         return \.updatedAt
     }
-    
+
     static var deletedAtKey: WritableKeyPath<Order, Date?> {
         return \.deletedAt
     }
 }
 
 extension Array where Iterator.Element == Order {
-    
+
     func response(on request: Request) throws -> Future<[Order.Response]> {
         return try self.map({ try $0.response(on: request) }).flatten(on: request)
     }
 }
 
 extension Future where T == [Order] {
-    
+
     func response(on request: Request) throws -> Future<[Order.Response]> {
         return self.flatMap(to: [Order.Response].self, { (this) in
             return try this.response(on: request)
@@ -97,7 +109,7 @@ extension Order {
         var shippingAddress: Address.Response?
         var billingAddress: Address.Response?
     }
-    
+
     func response(on request: Request)throws -> Future<Response> {
         let token: String
         if let bearer = request.http.headers.bearerAuthorization {
@@ -113,10 +125,10 @@ extension Order {
             )
             token = try signer.sign(user)
         }
-        
+
         return try map(
-            self.total(with: request),
-            self.tax(with: request),
+            self.total(on: request),
+            self.tax(on: request),
             self.items(with: request),
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()

@@ -17,11 +17,16 @@ extension Order: PayPalPaymentRepresentable {
     func paypal(on container: Container, content: PaymentGenerationContent) -> EventLoopFuture<PayPal.Payment> {
         return container.databaseConnection(to: Order.defaultDatabase).flatMap { connection in
             let config = try container.make(OrderService.self)
-            return self.paypal(on: connection, content: content, config: config)
+            return self.paypal(on: connection, content: content, config: config, container: container)
         }
     }
     
-    func paypal(on conn: DatabaseConnectable, content: PaymentGenerationContent, config: OrderService) -> Future<PayPal.Payment> {
+    func paypal(
+        on conn: DatabaseConnectable,
+        content: PaymentGenerationContent,
+        config: OrderService,
+        container: Container
+    ) -> Future<PayPal.Payment> {
         let id: Order.ID
         do {
             id = try self.requireID()
@@ -34,7 +39,20 @@ extension Order: PayPalPaymentRepresentable {
         let items = Item.query(on: conn).filter(\.orderID == id).all()
         let order = Order.query(on: conn).filter(\.id == id).first()
         
-        return map(shipping, items, order) { shipping, items, order -> PayPal.Payment in
+        let products: Future<[Item.ID: Product]> = items.flatMap { items in
+            return container.products(for: items.map { $0.productID }).map { products in
+                return zip(items, products)
+            }
+        }.map { merch in
+            return merch.reduce(into: [:]) { store, pair in
+                let (item, product) = pair
+                if let id = item.id {
+                    store[id] = product
+                }
+            }
+        }
+        
+        return map(shipping, items, order, products) { shipping, items, order, products -> PayPal.Payment in
             let address: PayPal.Address?
             let recipient = order?.firstname + order?.lastname
             if let street = shipping?.street, let city = shipping?.city, let country = shipping?.country, let zip = shipping?.zip {
@@ -54,22 +72,30 @@ extension Order: PayPalPaymentRepresentable {
                 address = nil
             }
             
-            let listItems = try items.map { item in
+            let listItems = try items.compactMap { item -> PayPal.Payment.Item? in
+                guard let id = item.id, let product = products[id], let price = product.price else { return nil }
+                
                 return try PayPal.Payment.Item(
                     quantity: String(describing: item.quantity),
-                    price: currency.amount(for: item.price),
+                    price: currency.amount(for: item.total(for: price.cents)),
                     currency: currency,
-                    sku: item.sku,
-                    name: item.name,
-                    description: item.description,
-                    tax: currency.amount(for: item.tax)
+                    sku: product.sku,
+                    name: product.name,
+                    description: product.description,
+                    tax: currency.amount(for: item.tax(for: price.cents))
                 )
             }
             let list = try PayPal.Payment.ItemList(items: listItems, address: address, phoneNumber: nil)
             
             
-            let subtotal = items.map { item in item.total }.reduce(0, +)
-            let tax = items.map { item in item.tax }.reduce(0, +)
+            let subtotal = items.compactMap { item -> Int? in
+                guard let id = item.id, let price = products[id]?.price?.cents else { return nil }
+                return item.total(for: price)
+            }.reduce(0, +)
+            let tax = items.compactMap { item -> Int? in
+                guard let id = item.id, let price = products[id]?.price?.cents else { return nil }
+                return item.tax(for: price)
+            }.reduce(0, +)
             
             let details = try DetailedAmount.Detail(
                 subtotal: currency.amount(for: subtotal),
