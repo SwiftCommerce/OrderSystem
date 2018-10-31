@@ -48,7 +48,7 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     try migrations(config: &migrationConfig)
     services.register(migrationConfig)
 
-    var commandConfig = CommandConfig()
+    var commandConfig = CommandConfig.default()
     try commands(config: &commandConfig)
     services.register(commandConfig)
     
