@@ -17,6 +17,11 @@ struct ProductManager: ServiceType {
             return self.container.future(error: error)
         }
     }
+    
+    func products(for ids: [Item.ProductID]) -> Future<[Product]> {
+        return ids.map(self.product).flatten(on: self.container)
+    }
+    
 }
 
 extension Container {
@@ -26,5 +31,9 @@ extension Container {
         } catch let error {
             return self.future(error: error)
         }
+    }
+    
+    func products(for ids: [Item.ProductID]) -> Future<[Product]> {
+        return ids.map(self.product).flatten(on: self)
     }
 }
