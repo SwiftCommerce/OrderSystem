@@ -48,6 +48,9 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     try migrations(config: &migrationConfig)
     services.register(migrationConfig)
 
+    var commandConfig = CommandConfig()
+    try commands(config: &commandConfig)
+    services.register(commandConfig)
     
     /// Configure controllers for making payments with third-party payment providers (i.e. PayPal or Stripe).
     var controllers = PaymentControllers(root: any, "orders")
