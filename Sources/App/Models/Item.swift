@@ -20,6 +20,9 @@ final class Item: Content, MySQLModel, Migration {
         self.quantity = quantity
     }
     
+    func total(for price: Int) -> Int { return price * quantity }
+    func tax(for price: Int) -> Int { return NSDecimalNumber(decimal: Decimal(self.total(for: price)) * (taxRate / 100)).intValue }
+    
     public static func prepare(on connection: MySQLConnection) -> Future<Void> {
         return Database.create(self, on: connection) { builder in
             try addProperties(to: builder)
