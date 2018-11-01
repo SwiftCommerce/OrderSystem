@@ -6,7 +6,7 @@ struct ProductManager: ServiceType {
     }
     
     let container: Container
-    let uri: String = "http://localhost:8081/v1/products/products"
+    let uri: String = "http://localhost:8081/v1/products"
     
     func product(for id: Item.ProductID) -> Future<Product> {
         do {
