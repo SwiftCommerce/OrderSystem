@@ -14,7 +14,12 @@ final class OrderController: RouteCollection {
     
     func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
         let order = Order()
-        let user: User? = try request.get("skelpo-payload")
+        let user: User?
+        if let token = request.http.headers.bearerAuthorization?.token {
+            let data = Data(token.utf8)
+            let jwt = try JWT<User>(unverifiedFrom: data)
+            user = jwt.payload
+        } else { user = nil }
         
         content.populate(order: order)
         order.userID = user?.id
