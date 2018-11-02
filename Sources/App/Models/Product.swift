@@ -5,7 +5,7 @@ struct Product: Content {
     let sku: String
     let name: String
     let description: String?
-    let price: Price?
+    let prices: [Price]?
 }
 
 struct Price: Content {
