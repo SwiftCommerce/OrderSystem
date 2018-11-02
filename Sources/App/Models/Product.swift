@@ -9,7 +9,8 @@ struct Product: Content {
 }
 
 struct Price: Content {
-    var id: Int?
-    var cents: Int
-    var currency: String
+    let id: Int?
+    let cents: Int
+    let active: Bool
+    let currency: String
 }
