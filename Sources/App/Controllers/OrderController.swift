@@ -10,6 +10,9 @@ final class OrderController: RouteCollection {
         orders.post(OrderContent.self, use: create)
         protected.get(use: all)
         protected.get(Order.parameter, use: get)
+        
+        protected.post(ItemContent.self, at: Order.parameter, "items", use: addItem)
+        protected.delete(Order.parameter, "items", Item.ID.parameter, use: removeItem)
     }
     
     func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
@@ -67,5 +70,20 @@ final class OrderController: RouteCollection {
 
         let order = Order.query(on: request).filter(\.userID == user.id).filter(\.id == id).first().unwrap(or: Abort(.notFound))
         return order.flatMap { try $0.response(on: request) }
+    }
+    
+    func addItem(_ request: Request, content: ItemContent)throws -> Future<Order.Response> {
+        return try request.parameters.next(Order.self).flatMap { order in
+            let newItem = try content.save(on: request, order: order.requireID())
+            return newItem.flatMap { _ in try order.response(on: request) }
+        }
+    }
+    
+    func removeItem(_ request: Request)throws -> Future<HTTPStatus> {
+        return try request.parameters.next(Order.self).flatMap { order in
+            let itemID = try request.parameters.next(Item.ID.self)
+            let deletedItem = try Item.query(on: request).filter(\.orderID == order.requireID()).filter(\.id == itemID).delete()
+            return deletedItem.transform(to: .noContent)
+        }
     }
 }
