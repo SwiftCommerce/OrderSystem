@@ -124,15 +124,9 @@ extension Order {
             token = try signer.sign(user)
         }
 
-        let total: Future<Int?>
-        let tax: Future<Int?>
-        if let currency = try request.content.syncGet(String?.self, at: "currency") {
-            total = self.total(on: request, currency: currency).map { $0 }
-            tax = self.tax(on: request, currency: currency).map { $0 }
-        } else {
-            total = request.future(nil)
-            tax = request.future(nil)
-        }
+        let currency = request.content[String.self, at: "currency"]
+        let total = currency.flatMap { $0 == nil ? request.future(nil) : self.total(on: request, currency: $0!).map { $0 } }
+        let tax = currency.flatMap { $0 == nil ? request.future(nil) : self.tax(on: request, currency: $0!).map { $0 } }
         
         return try map(
             total,
