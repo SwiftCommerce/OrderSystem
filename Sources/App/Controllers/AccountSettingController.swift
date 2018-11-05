@@ -4,13 +4,13 @@ import Vapor
 
 final class AccountSettingController: RouteCollection {
     func boot(router: Router) throws {
-        let settings = router.grouped(JWTStorageMiddleware<User>()).grouped("orders", "account", Account.parameter, "settings")
+        let settings = router.grouped(JWTStorageMiddleware<User>()).grouped("orders", "account", Account.ID.parameter, "settings")
         
         settings.post(AccountSettingContent.self, use: create)
         settings.get(use: all)
-        settings.get(AccountSetting.parameter, use: get)
-        settings.patch(AccountSetting.parameter, use: update)
-        settings.delete(AccountSetting.parameter, use: delete)
+        settings.get(AccountSetting.ID.parameter, use: get)
+        settings.patch(AccountSetting.ID.parameter, use: update)
+        settings.delete(AccountSetting.ID.parameter, use: delete)
     }
     
     func create(_ request: Request, _ setting: AccountSettingContent)throws -> Future<AccountSetting> {
