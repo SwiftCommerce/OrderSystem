@@ -35,35 +35,29 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     var guest: Bool { return self.userID == nil }
 
     func total(on container: Container, currency: String) -> Future<Int> {
-        return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
-            return try self.items(with: conn).flatMap { items in
-                return container.products(for: items)
-            }.map { merch -> Int in
-                return try merch.reduce(0) { total, merch in
-                    let (item, product) = merch
-                    guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
-                        throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
-                    }
-                    return total + item.total(for: price.cents)
+        return container.databaseConnection(to: .mysql).flatMap { conn in
+            return try self.items(with: conn)
+        }.flatMap { items in
+            return container.products(for: items, reduceInto: 0) { total, item, product in
+                guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
+                    throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
                 }
+                total += item.total(for: price.cents)
             }
         }
     }
 
     func tax(on container: Container, currency: String) -> Future<Int> {
-        return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
-            return try self.items(with: conn).flatMap { items in
-                return container.products(for: items)
-            }.map { merch -> Int in
-                return try merch.reduce(0) { total, merch in
-                    let (item, product) = merch
-                    guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
-                        throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
-                    }
-                    return total + item.tax(for: price.cents)
+        return container.databaseConnection(to: .mysql).flatMap { conn in
+            return try self.items(with: conn)
+        }.flatMap { items in
+            return container.products(for: items, reduceInto: 0) { total, item, product in
+                guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
+                    throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
                 }
+                total += item.tax(for: price.cents)
             }
-        }
+        }        
     }
 
     func items(with conn: DatabaseConnectable)throws -> Future<[Item]> {

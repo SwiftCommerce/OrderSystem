@@ -37,13 +37,19 @@ extension Container {
         return ids.map(self.product).flatten(on: self)
     }
     
-    func products(for items: [Item]) -> Future<[(item: Item, product: Product)]> {
+    func products<T>(
+        for items: [Item],
+        reduceInto result: T,
+        _ handler: @escaping (inout T, Item, Product)throws -> ()
+    ) -> Future<T> {
         return products(for: items.map { $0.productID }).map { products in
-            return items.reduce(into: []) { result, item in
+            var result = result
+            try items.forEach { item in
                 if let product = products.first(where: { $0.id == item.productID }) {
-                    result.append((item, product))
+                    try handler(&result, item, product)
                 }
             }
+            return result
         }
     }
 }

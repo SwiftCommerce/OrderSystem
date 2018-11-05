@@ -39,20 +39,20 @@ extension Order: PayPalPaymentRepresentable {
         let items = Item.query(on: conn).filter(\.orderID == id).all()
         let order = Order.query(on: conn).filter(\.id == id).first()
         let products: Future<[Item.ID: (product: Product, price: Price)]> = items.flatMap { items in
-            return container.products(for: items).map { items in try items.reduce(into: [:]) { result, merch in
-                let id = try merch.item.requireID()
-                guard let price = merch.product.prices?.first(
+            return container.products(for: items, reduceInto: [:]) { result, item, product in
+                let id = try item.requireID()
+                guard let price = product.prices?.first(
                     where: { $0.active == true && $0.currency.lowercased() == content.currency.lowercased() }
                 ) else {
                     throw PayPalError(
                         status: .failedDependency,
                         identifier: "noPrice",
-                        reason: "No price found for product '\(merch.product.sku)' with currency '\(content.currency)'"
+                        reason: "No price found for product '\(product.sku)' with currency '\(content.currency)'"
                     )
                 }
                 
-                result[id] = (merch.product, price)
-            }}
+                result[id] = (product, price)
+            }
         }
         
         return map(shipping, items, order, products) { shipping, items, order, products -> PayPal.Payment in
