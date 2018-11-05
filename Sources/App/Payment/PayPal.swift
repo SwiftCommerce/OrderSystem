@@ -38,10 +38,20 @@ extension Order: PayPalPaymentRepresentable {
         let shipping = Address.query(on: conn).filter(\.orderID == id).filter(\.shipping == true).first()
         let items = Item.query(on: conn).filter(\.orderID == id).all()
         let order = Order.query(on: conn).filter(\.id == id).first()
-        let products: Future<[Item.ID: Product]> = items.flatMap { items in
-            return container.products(for: items).map { items in items.reduce(into: [:]) { result, merch in
-                guard let id = merch.item.id else { return }
-                result[id] = merch.product
+        let products: Future<[Item.ID: (product: Product, price: Price)]> = items.flatMap { items in
+            return container.products(for: items).map { items in try items.reduce(into: [:]) { result, merch in
+                let id = try merch.item.requireID()
+                guard let price = merch.product.prices?.first(
+                    where: { $0.active == true && $0.currency.lowercased() == content.currency.lowercased() }
+                ) else {
+                    throw PayPalError(
+                        status: .failedDependency,
+                        identifier: "noPrice",
+                        reason: "No price found for product '\(merch.product.sku)' with currency '\(content.currency)'"
+                    )
+                }
+                
+                result[id] = (merch.product, price)
             }}
         }
         
@@ -66,7 +76,8 @@ extension Order: PayPalPaymentRepresentable {
             }
             
             let listItems = try items.compactMap { item -> PayPal.Payment.Item? in
-                guard let id = item.id, let product = products[id], let price = product.price else { return nil }
+                guard let id = item.id, let element = products[id] else { return nil }
+                let (product, price) = element
                 
                 return try PayPal.Payment.Item(
                     quantity: String(describing: item.quantity),
@@ -82,11 +93,11 @@ extension Order: PayPalPaymentRepresentable {
             
             
             let subtotal = items.compactMap { item -> Int? in
-                guard let id = item.id, let price = products[id]?.price?.cents else { return nil }
+                guard let id = item.id, let price = products[id]?.price.cents else { return nil }
                 return item.total(for: price)
             }.reduce(0, +)
             let tax = items.compactMap { item -> Int? in
-                guard let id = item.id, let price = products[id]?.price?.cents else { return nil }
+                guard let id = item.id, let price = products[id]?.price.cents else { return nil }
                 return item.tax(for: price)
             }.reduce(0, +)
             

@@ -34,22 +34,34 @@ final class Order: Content, MySQLModel, Migration, Parameter {
 
     var guest: Bool { return self.userID == nil }
 
-    func total(on container: Container) -> Future<Int> {
+    func total(on container: Container, currency: String) -> Future<Int> {
         return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
             return try self.items(with: conn).flatMap { items in
                 return container.products(for: items)
             }.map { merch -> Int in
-                return merch.reduce(0) { $0 + $1.item.total(for: $1.product.price?.cents ?? 0) }
+                return try merch.reduce(0) { total, merch in
+                    let (item, product) = merch
+                    guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
+                        throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
+                    }
+                    return total + item.total(for: price.cents)
+                }
             }
         }
     }
 
-    func tax(on container: Container) -> Future<Int> {
+    func tax(on container: Container, currency: String) -> Future<Int> {
         return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Int> in
             return try self.items(with: conn).flatMap { items in
                 return container.products(for: items)
             }.map { merch -> Int in
-                return merch.reduce(0) { $0 + $1.item.tax(for: $1.product.price?.cents ?? 0) }
+                return try merch.reduce(0) { total, merch in
+                    let (item, product) = merch
+                    guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
+                        throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
+                    }
+                    return total + item.tax(for: price.cents)
+                }
             }
         }
     }
@@ -91,11 +103,11 @@ extension Future where T == [Order] {
 
 extension Order {
     struct Response: Vapor.Content {
-        var id, userID: Int?
+        var id, userID, total, tax: Int?
         var comment, authToken, firstname, lastname, company, email, phone: String?
         var status: Order.Status
         var paymentStatus: Order.PaymentStatus
-        var paidTotal, refundedTotal, total, tax: Int
+        var paidTotal, refundedTotal: Int
         var guest: Bool
         var items: [Item.OrderResponse]
         var shippingAddress: Address.Response?
@@ -118,18 +130,28 @@ extension Order {
             token = try signer.sign(user)
         }
 
+        let total: Future<Int?>
+        let tax: Future<Int?>
+        if let currency = try request.content.syncGet(String?.self, at: "currency") {
+            total = self.total(on: request, currency: currency).map { $0 }
+            tax = self.tax(on: request, currency: currency).map { $0 }
+        } else {
+            total = request.future(nil)
+            tax = request.future(nil)
+        }
+        
         return try map(
-            self.total(on: request),
-            self.tax(on: request),
+            total,
+            tax,
             self.items(with: request),
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
             Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
         ) { total, tax, items, shipping, billing in
             let email = self.email?.hasSuffix("ordersystem.example.com") ?? false ? nil : self.email
             return Response(
-                id: self.id, userID: self.userID, comment: self.comment, authToken: token, firstname: self.firstname, lastname: self.lastname,
-                company: self.company, email: email, phone: self.phone, status: self.status, paymentStatus: self.paymentStatus,
-                paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, total: total, tax: tax, guest: self.guest,
+                id: self.id, userID: self.userID, total: total, tax: tax, comment: self.comment, authToken: token, firstname: self.firstname,
+                lastname: self.lastname, company: self.company, email: email, phone: self.phone, status: self.status,
+                paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, guest: self.guest,
                 items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
             )
         }

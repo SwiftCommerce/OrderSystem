@@ -29,8 +29,8 @@ extension Order: PaymentRepresentable {
         externalID: ID?
     ) -> EventLoopFuture<Order.Payment> where Method : PaymentMethod {
         return container.databaseConnection(to: .mysql).flatMap { connection -> Future<(Int, Int, Order.Database.Connection)> in
-            let total = self.total(on: container)
-            let tax = self.tax(on: container)
+            let total = self.total(on: container, currency: content.currency)
+            let tax = self.tax(on: container, currency: content.currency)
             return map(total, tax) { return ($0, $1, connection) }
         }.flatMap { requiredInfo -> Future<Order.Payment> in
             let (total, tax, connection) = requiredInfo
