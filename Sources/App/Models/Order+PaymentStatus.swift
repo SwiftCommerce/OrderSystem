@@ -1,11 +1,7 @@
 import FluentMySQL
 
 extension Order {
-    enum PaymentStatus: Int, Codable, Equatable, MySQLEnumType {
-        static func reflectDecoded() throws -> (Order.PaymentStatus, Order.PaymentStatus) {
-            return (.open, .failure)
-        }
-        
+    enum PaymentStatus: Int, Codable, Hashable, CaseIterable, MySQLEnumType {
         case open, partial, paid, refunded, failure
     }
 }
