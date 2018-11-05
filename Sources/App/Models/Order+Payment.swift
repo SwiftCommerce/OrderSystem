@@ -11,8 +11,6 @@ extension Order {
         var externalID: String?
         var currency: String
         var payee: String?
-        var successRedirect: String?
-        var failureRedirect: String?
         
         var paid: Int
         var refunded: Int
