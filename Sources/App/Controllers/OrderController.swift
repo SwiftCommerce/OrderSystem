@@ -14,22 +14,26 @@ final class OrderController: RouteCollection {
     
     func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
         let order = Order()
+        content.populate(order: order)
+        
         let user: User?
+        let email: String
+        
         if let token = request.http.headers.bearerAuthorization?.token {
             let data = Data(token.utf8)
             let jwt = try JWT<User>(unverifiedFrom: data)
             user = jwt.payload
         } else { user = nil }
         
-        content.populate(order: order)
-        order.userID = user?.id
-        if let email = user?.email {
-            order.email = email
+        if let userEmail = user?.email {
+            email = userEmail
         } else {
             let prefix = order.guest ? "guest" : "user"
-            order.email = prefix + UUID().uuidString + "@ordersystem.example.com"
+            email = prefix + UUID().uuidString + "@ordersystem.example.com"
         }
         
+        order.userID = user?.id
+        order.email = email
         let saved = order.save(on: request)
 
         return saved.flatMap { order -> Future<Order> in
