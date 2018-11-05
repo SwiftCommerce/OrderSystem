@@ -6,6 +6,8 @@ import Vapor
 import Stripe
 import PayPal
 
+let payload = "skelpo-payload"
+
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
     

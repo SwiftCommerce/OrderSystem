@@ -60,7 +60,7 @@ extension Order: PaymentRepresentable {
     func fetchPayment(on container: Container) -> EventLoopFuture<Order.Payment> {
         return container.databaseConnection(to: .mysql).flatMap { connection in
             if let request = container as? Request {
-                guard let user = try request.get("skelpo-payload", as: User.self) else { throw Abort(.unauthorized) }
+                guard let user = try request.get(payload, as: User.self) else { throw Abort(.unauthorized) }
                 guard self.email == user.email else { throw Abort(.notFound) }
             }
 

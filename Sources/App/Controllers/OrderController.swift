@@ -44,7 +44,7 @@ final class OrderController: RouteCollection {
     }
     
     func all(_ request: Request)throws -> Future<[Order.Response]> {
-        guard let user = try request.get("skelpo-payload", as: User.self), let id = user.id else {
+        guard let user = try request.get(payload, as: User.self), let id = user.id else {
             throw Abort(.unauthorized, reason: "You must be logged into your account to view past orders.")
         }
         return try Order.query(on: request).filter(\.userID == id).all().response(on: request)
@@ -53,7 +53,7 @@ final class OrderController: RouteCollection {
     
     func get(_ request: Request)throws -> Future<Order.Response> {
         guard
-            let user = try request.get("skelpo-payload", as: User.self),
+            let user = try request.get(payload, as: User.self),
             let rawID = request.parameters.rawValues(for: Order.self).first,
             let id = Int(rawID),
             user.id != nil
