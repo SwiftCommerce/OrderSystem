@@ -16,8 +16,6 @@ final class OrderController: RouteCollection {
     }
     
     func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
-        let configuration = try request.make(OrderService.self)
-        
         let order = Order()
         content.populate(order: order)
         
@@ -29,6 +27,7 @@ final class OrderController: RouteCollection {
             let jwt = try JWT<User>(unverifiedFrom: data)
             user = jwt.payload
         } else {
+            let configuration = try request.make(OrderService.self)
             guard configuration.guestCheckout else {
                 throw Abort(.unauthorized, reason: "Authorization required to create an order")
             }
