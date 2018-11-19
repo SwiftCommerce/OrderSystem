@@ -1,0 +1,1109 @@
+{
+	"info": {
+		"_postman_id": "a41dc98d-629c-4062-9bd2-3445336ca33e",
+		"name": "Order System",
+		"description": "The Order System is a microservice that handles ordering merchandise from an e-commerce web app. It stores the order history of a user, integrates with third-party payment providers such as PayPal and Stripe, and stores custom account information.\n\nThis microservice is designed to be integrated with other services that handle things such as the product catalog to create a whole e-commerce platform.\n\n- **Note:** Although some requests are documented with the `application/x-www-form-urlencoded` type, they also support `application/json`.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Create Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9a4d9b89-1d96-4e31-8a11-29f22f67fe02",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Set `order` environment variable\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.environment.set(\"order\", json.id);",
+									"});",
+									"",
+									"pm.test(\"Set `jwt_token` environment variable\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.environment.set(\"jwt_token\", json.authToken);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"addresses\": {\n\t\t\"billing\": {\n\t\t\t\"street\": \"156 Plumberry Ln.\",\n\t\t\t\"zip\": \"15620\",\n\t\t\t\"city\": \"Cidersville\",\n\t\t\t\"country\": \"Notherling\"\n\t\t}\n\t},\n\t\"items\": [\n\t\t{\n\t\t\t\"productID\": 1,\n\t\t\t\"quantity\": 4,\n\t\t\t\"taxRate\": 7.42\n\t\t}\t\n\t]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders"
+							]
+						},
+						"description": "Creates a new order that a customer can pay for. The new order contains information such as the items in the order, the customer's billing address, and their shipping address.\n\nAlthough this route does not require authentication, a token can be passed in and the `email` and `id` values in the payload will be used to identify the order. Otherwise, it will be considered a guest order."
+					},
+					"response": [
+						{
+							"name": "Create Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"addresses\": {\n\t\t\"billing\": {\n\t\t\t\"street\": \"156 Plumberry Ln.\",\n\t\t\t\"zip\": \"15620\",\n\t\t\t\"city\": \"Cidersville\",\n\t\t\t\"country\": \"Notherling\"\n\t\t}\n\t},\n\t\"items\": [\n\t\t{\n\t\t\t\"productID\": 1,\n\t\t\t\"quantity\": 4,\n\t\t\t\"taxRate\": 7.42\n\t\t}\t\n\t]\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "881"
+								},
+								{
+									"key": "date",
+									"value": "Thu, 01 Nov 2018 20:47:03 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 11,\n    \"userID\": 8225173777548120213,\n    \"authToken\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImNyaXQiOlsiZXhwIiwiYXVkIl19.eyJleHAiOjY0MDkyMjExMjAwLCJlbWFpbCI6Imp3dC50b2tlbkBleGFtcGxlLmNvbSIsImlkIjo4MjI1MTczNzc3NTQ4MTIwMjEzLCJpYXQiOjE1NDExMDUyMDYuNjQ3MDI4OX0.Az6K6zKTRftnRYtvTgpNzhkEJM1LB_UHMNY1rcaccJLvT2FOD0Bw37nQJp-3m-iep11XEGZ8tYAcBqZT43zAMEL6LuGkaR2P2q_thqvP43rjs9Bcugt3DUXzRj5HuzQOpLubpDb0xcQK1g9TSCWB6kZdkV3ImG3WgXGqjHgzwoqCq0zRRuuYO6ZmSiT6BnQibtmNUYnSW5Sm_keHceGLosP8IcUq6dZC58u8AEdEXRrDKBmrY7snpAvAXAHfS74dfdol36pf6dQCm8wwd4SDsepewvghl77yAQ2Ou1xo90x9x5IenihDfPJhsqSKXZ9-Xrw_MXuqP-dU6BuATCNxHA\",\n    \"tax\": 0,\n    \"refundedTotal\": 0,\n    \"total\": 0,\n    \"paidTotal\": 0,\n    \"billingAddress\": {\n        \"country\": \"Notherling\",\n        \"street\": \"156 Plumberry Ln.\",\n        \"zip\": \"15620\",\n        \"city\": \"Cidersville\"\n    },\n    \"items\": [\n        {\n            \"taxRate\": 7.42,\n            \"quantity\": 4,\n            \"productID\": 1\n        }\n    ],\n    \"guest\": false,\n    \"email\": \"jwt.token@example.com\",\n    \"status\": 0,\n    \"paymentStatus\": 0\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Order by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders/{{order}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders",
+								"{{order}}"
+							]
+						},
+						"description": "Gets the order for a user with a specific ID. The order's user ID is fetched from the JWT auth token passed in the `Authorization` header."
+					},
+					"response": [
+						{
+							"name": "Get Order by ID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders/{{order}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders",
+										"{{order}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "881"
+								},
+								{
+									"key": "date",
+									"value": "Thu, 01 Nov 2018 20:47:54 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 11,\n    \"userID\": 8225173777548120213,\n    \"authToken\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImNyaXQiOlsiZXhwIiwiYXVkIl19.eyJleHAiOjY0MDkyMjExMjAwLCJlbWFpbCI6Imp3dC50b2tlbkBleGFtcGxlLmNvbSIsImlkIjo4MjI1MTczNzc3NTQ4MTIwMjEzLCJpYXQiOjE1NDExMDUyMDYuNjQ3MDI4OX0.Az6K6zKTRftnRYtvTgpNzhkEJM1LB_UHMNY1rcaccJLvT2FOD0Bw37nQJp-3m-iep11XEGZ8tYAcBqZT43zAMEL6LuGkaR2P2q_thqvP43rjs9Bcugt3DUXzRj5HuzQOpLubpDb0xcQK1g9TSCWB6kZdkV3ImG3WgXGqjHgzwoqCq0zRRuuYO6ZmSiT6BnQibtmNUYnSW5Sm_keHceGLosP8IcUq6dZC58u8AEdEXRrDKBmrY7snpAvAXAHfS74dfdol36pf6dQCm8wwd4SDsepewvghl77yAQ2Ou1xo90x9x5IenihDfPJhsqSKXZ9-Xrw_MXuqP-dU6BuATCNxHA\",\n    \"tax\": 0,\n    \"refundedTotal\": 0,\n    \"total\": 0,\n    \"paidTotal\": 0,\n    \"billingAddress\": {\n        \"country\": \"Notherling\",\n        \"street\": \"156 Plumberry Ln.\",\n        \"zip\": \"15620\",\n        \"city\": \"Cidersville\"\n    },\n    \"items\": [\n        {\n            \"taxRate\": 7.42,\n            \"quantity\": 4,\n            \"productID\": 1\n        }\n    ],\n    \"guest\": false,\n    \"email\": \"jwt.token@example.com\",\n    \"status\": 0,\n    \"paymentStatus\": 0\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Orders for User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c367f5f0-940f-41bf-b31f-9d348cd0fe14",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"New order returned\", function () {",
+									"    var json = pm.response.json();",
+									"    var id = pm.environment.get(\"order\");",
+									"    ",
+									"    var result = json.find(function (el) { el.id ==  id})",
+									"    pm.expect(result.id).to.eql(id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders"
+							]
+						},
+						"description": "Gets a user's order history. The orders are fetched that have a user ID matching the ID in the JWT auth token."
+					},
+					"response": [
+						{
+							"name": "Get Orders for User",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "452"
+								},
+								{
+									"key": "date",
+									"value": "Thu, 25 Oct 2018 21:17:40 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"status\": 0,\n        \"userID\": 4533041739374140682,\n        \"guest\": false,\n        \"id\": 7,\n        \"tax\": 1038,\n        \"items\": [\n            {\n                \"quantity\": 4,\n                \"sku\": \"672A75A7-EA1E-4D9A-95BC-11885E5070EE\",\n                \"price\": 3500,\n                \"tax\": 1038,\n                \"taxRate\": 7.42,\n                \"totalWithTax\": 15038,\n                \"total\": 14000,\n                \"description\": \"We have no description\",\n                \"name\": \"Mince-meat Pie\"\n            }\n        ],\n        \"refundedTotal\": 0,\n        \"paymentStatus\": 0,\n        \"total\": 14000,\n        \"billingAddress\": {\n            \"country\": \"Notherling\",\n            \"street\": \"156 Plumberry Ln.\",\n            \"zip\": \"15620\",\n            \"city\": \"Cidersville\"\n        },\n        \"paidTotal\": 0\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Add Item to Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"productID\": 2,\n\t\"quantity\": 2,\n\t\"taxRate\": 7.42\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders/{{order}}/items",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders",
+								"{{order}}",
+								"items"
+							]
+						},
+						"description": "Adds a new item to an order model."
+					},
+					"response": [
+						{
+							"name": "Add Item to Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"productID\": 2,\n\t\"quantity\": 2,\n\t\"taxRate\": 7.42\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders/{{order}}/items",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders",
+										"{{order}}",
+										"items"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "904"
+								},
+								{
+									"key": "date",
+									"value": "Mon, 05 Nov 2018 22:39:57 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"status\": 0,\n    \"userID\": 8994818343213048547,\n    \"authToken\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImNyaXQiOlsiZXhwIiwiYXVkIl19.eyJleHAiOjY0MDkyMjExMjAwLCJlbWFpbCI6Imp3dC50b2tlbkBleGFtcGxlLmNvbSIsImlkIjo4OTk0ODE4MzQzMjEzMDQ4NTQ3LCJpYXQiOjE1NDE0NTcwNTMuMTY3MTJ9.JZRNNlSsE7pSTOHdWRJAGiKkEeBOzO_fyAvMge8Stz6QUIHlbUBPE9dkWutNGwxa_m61vnUVcnWQCwihU2VXT87AeKrkQP6mgzAqYyP2D5nB4VlwKnvKt0wvDeP4wT3FXOoQbjSWDYzPuYst95qEq81kbm_arx88bNLrIHlFpHXkgA5nr80xGKnqS-g71QdXTbnXQ3uO4PH4DJUiaPm1deeb1D3vMo9-bDu8P-n9zWJnD4cGS_HEXejajaahU8u-JP2LXbSosOcUI39T1a9PS7S44Awx9Qlh3dElaXnOsxP-vh9CmgafA2H9MM_o27LQJUn9I78dX1uJPFpAfZlHxw\",\n    \"id\": 16,\n    \"guest\": false,\n    \"items\": [\n        {\n            \"taxRate\": 7.42,\n            \"quantity\": 4,\n            \"productID\": 1\n        },\n        {\n            \"taxRate\": 7.42,\n            \"quantity\": 2,\n            \"productID\": 2\n        }\n    ],\n    \"refundedTotal\": 0,\n    \"email\": \"jwt.token@example.com\",\n    \"paymentStatus\": 0,\n    \"billingAddress\": {\n        \"country\": \"Notherling\",\n        \"street\": \"156 Plumberry Ln.\",\n        \"zip\": \"15620\",\n        \"city\": \"Cidersville\"\n    },\n    \"paidTotal\": 0\n}"
+						}
+					]
+				},
+				{
+					"name": "Remove Item from Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json",
+								"disabled": true
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders/{{order}}/items/{{item}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders",
+								"{{order}}",
+								"items",
+								"{{item}}"
+							]
+						},
+						"description": "Removes an item from an order model."
+					},
+					"response": [
+						{
+							"name": "Remove Item from Order",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json",
+										"disabled": true
+									}
+								],
+								"body": {},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders/{{order}}/items/{{item}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders",
+										"{{order}}",
+										"items",
+										"{{item}}"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "date",
+									"value": "Mon, 05 Nov 2018 22:45:11 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			],
+			"description": "An `Order` model represents the items a customer is purchasing from a merchant and handles additional metadata, such as the customer’s information (`firstname`, `lastname`, `email`, etc), its payment status, or if the order is made by a guest.\n\nAn order also as the parent for multiple other model types, including `Item` which represents a product in the order, `Address` which holds the information for the order’s payment or billing addresses, and `Payment`, which is the internal payment information that connects to an external payment from a third-party payment provider such as PayPal or Stripe.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "efb991af-5d5d-442c-a1ad-295afe4d236e",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "ee85e3f6-6450-4902-b4ce-1bfe5cd45b6c",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Create PayPal Payment For Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "currency",
+									"value": "usd",
+									"description": "The currency to use for the payment. (Required)",
+									"type": "text"
+								},
+								{
+									"key": "shipping",
+									"value": "3000",
+									"description": "The price of shipping.",
+									"type": "text"
+								},
+								{
+									"key": "shippingDiscount",
+									"value": "1200",
+									"description": "The discount the customer receives on the shipping price.",
+									"type": "text"
+								},
+								{
+									"key": "handling",
+									"value": "1500",
+									"description": "The price for handing.",
+									"type": "text"
+								},
+								{
+									"key": "insurence",
+									"value": "2000",
+									"description": "The price for insurence.",
+									"type": "text"
+								},
+								{
+									"key": "giftWrap",
+									"value": "250",
+									"description": "The price for gift wrap.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders/{{order}}/payment/paypal/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders",
+								"{{order}}",
+								"payment",
+								"paypal",
+								"create"
+							]
+						},
+						"description": "Creates a new PayPal payment based on an `Order` model's `Item` prices.\n\nThe response returned is the JSON representation of a PayPal link. Usually, you will redirect your client to the URI in the `href` key. The client can then authorize the PayPal payment so you can execute it."
+					},
+					"response": [
+						{
+							"name": "Create PayPal Payment For Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"currency\": \"USD\",\n\t\"shipping\": 3000,\n\t\"shippingDiscount\": 1200,\n\t\"handling\": 1500,\n\t\"insurence\": 2000,\n\t\"giftWrap\": 250\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders/{{order}}/payment/paypal/create",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders",
+										"{{order}}",
+										"payment",
+										"paypal",
+										"create"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "150"
+								},
+								{
+									"key": "date",
+									"value": "Thu, 25 Oct 2018 21:39:28 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"rel\": \"approval_url\",\n    \"href\": \"https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-04B42176RC427425A\",\n    \"method\": \"REDIRECT\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Execute PayPal Payment for Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "payerID",
+									"value": "B5DMWWRJTB6G4",
+									"description": "The ID of the user in the PayPal system that is making the payment.",
+									"type": "text"
+								},
+								{
+									"key": "paymentID",
+									"value": "PAY-0B756831FK924644ALPMFOXA",
+									"description": "The ID of the payment to execute.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders/{{order}}/payment/paypal/execute",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders",
+								"{{order}}",
+								"payment",
+								"paypal",
+								"execute"
+							]
+						},
+						"description": "Executes a PayPal payment that was created for an order.\n\nThe body of this request expects 2 values, `payerID` and `paymentID`. These values come from the `accept` redirect request for the payment that is executed.\n\n- Note: The `payerID` query-string key is `PayerID` and `paymentID` is `paymentId`."
+					},
+					"response": [
+						{
+							"name": "Execute PayPal Payment for Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"payerID\": \"B5DMWWRJTB6G4\",\n\t\"paymentID\": \"PAYID-LPJDQGY8RX5968459466911A\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders/{{order}}/payment/paypal/execute",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders",
+										"{{order}}",
+										"payment",
+										"paypal",
+										"execute"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "247"
+								},
+								{
+									"key": "date",
+									"value": "Thu, 25 Oct 2018 21:45:11 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 7,\n    \"insurence\": 2000,\n    \"giftWrap\": 250,\n    \"shipping\": 3000,\n    \"tax\": 1038,\n    \"orderID\": 13,\n    \"paymentMethod\": \"paypal\",\n    \"handling\": 1500,\n    \"subtotal\": 14000,\n    \"refunded\": 0,\n    \"shippingDiscount\": 1200,\n    \"currency\": \"USD\",\n    \"externalID\": \"PAYID-LPJDQGY8RX5968459466911A\",\n    \"paid\": 0\n}"
+						}
+					]
+				},
+				{
+					"name": "Execute Stripe Payment for Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "stripeToken",
+									"value": "tok_1DPGsL2DSdLg2fx4QreVIQGU",
+									"description": "The Strip credit card token, returned from the Stripe API when the data is submitted from your front-end. (Required)",
+									"type": "text"
+								},
+								{
+									"key": "currency",
+									"value": "usd",
+									"description": "The currency to use for the payment. (Required)",
+									"type": "text"
+								},
+								{
+									"key": "shipping",
+									"value": "3000",
+									"description": "The price of shipping.",
+									"type": "text"
+								},
+								{
+									"key": "shippingDiscount",
+									"value": "1200",
+									"description": "The discount the customer receives on the shipping price.",
+									"type": "text"
+								},
+								{
+									"key": "handling",
+									"value": "1500",
+									"description": "The price for handing.",
+									"type": "text"
+								},
+								{
+									"key": "insurence",
+									"value": "2000",
+									"description": "The price for insurence.",
+									"type": "text"
+								},
+								{
+									"key": "giftWrap",
+									"value": "250",
+									"description": "The price for gift wrap.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders/{{order}}/payment/stripe-cc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders",
+								"{{order}}",
+								"payment",
+								"stripe-cc"
+							]
+						},
+						"description": "Takes a Stripe credit card token and creates a charge with it."
+					},
+					"response": [
+						{
+							"name": "Execute Stripe Payment for Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/x-www-form-urlencoded",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "stripeToken",
+											"value": "tok_1DPGsL2DSdLg2fx4QreVIQGU",
+											"description": "The Strip credit card token, returned from the Stripe API when the data is submitted from your front-end. (Required)",
+											"type": "text"
+										},
+										{
+											"key": "currency",
+											"value": "usd",
+											"description": "The currency to use for the payment. (Required)",
+											"type": "text"
+										},
+										{
+											"key": "shipping",
+											"value": "3000",
+											"description": "The price of shipping.",
+											"type": "text"
+										},
+										{
+											"key": "shippingDiscount",
+											"value": "",
+											"description": "The discount the customer receives on the shipping price.",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "handling",
+											"value": "1500",
+											"description": "The price for handing.",
+											"type": "text"
+										},
+										{
+											"key": "insurence",
+											"value": "2000",
+											"description": "The price for insurence.",
+											"type": "text"
+										},
+										{
+											"key": "giftWrap",
+											"value": "",
+											"description": "The price for gift wrap.",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8080/v1/orders/{{order}}/payment/stripe-cc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"v1",
+										"orders",
+										"{{order}}",
+										"payment",
+										"stripe-cc"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "36"
+								},
+								{
+									"key": "date",
+									"value": "Thu, 25 Oct 2018 22:00:23 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Success\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Payments can be made for an `Order` resource using any one of the configured third-party payment providers. By default these are PayPal and Stripe.\n\nDepending on the provider you use, you will have to follow different steps to create and execute the remote payment. For some, you call the `create` endpoint, and when that succeeded, you call `execute`. For others, you create the payment from the client and when that succeeds, you execute it. This is done when you need to pass credit card information to the provider and want to avoid it going through your server. This helps your app to remain [PCI complient](https://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard).\n\n### PayPal\n\nPayPal payments are made in two steps. First you create the payment, then you execute it.\n\nAfter you create an `Order`, you can call the [`POST /orders/:order/payment/paypal/create`]() route which will both create the payment with PayPal and an internal `Payment` instance. Once the payment is created, you can execute it with the [`POST /orders/:order/payment/paypal/execute`]() route.\n\n### Stripe\n\nWhile you could say a Stripe payment is create with two steps, it only requires one on your service. First you need to create the payment with Stripe from your front-end. You can follow their [quickstart guide](https://stripe.com/docs/quickstart) to do that. You will want to set the credit card form’s action to the [`POST /orders/:order/payment/stripe-cc`]() route and make sure the form data sends the required payment information in the request’s body.\n\nYou should end up with the form submission sending the Stripe credit card token, plus additional payment data, to your order service.\n\n- Note: All currency amounts are done in the currency's smallest format possible, so if an items's price is `$5.50` USD, you would pass in `550`.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1095dfc5-0ae9-4c5d-a030-b8786e6ac7e6",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "0b075582-c956-4e07-8496-587cf46b7c8c",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Service Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/v1/orders/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v1",
+						"orders",
+						"health"
+					]
+				},
+				"description": "Used by an app's load balancer to check the health of the service."
+			},
+			"response": [
+				{
+					"name": "Service Health",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8080/v1/orders/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"orders",
+								"health"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "plain",
+					"header": [
+						{
+							"key": "content-type",
+							"value": "text/plain; charset=utf-8"
+						},
+						{
+							"key": "content-length",
+							"value": "9"
+						},
+						{
+							"key": "date",
+							"value": "Thu, 25 Oct 2018 21:11:54 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "All Good!"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "84a4de3d-a9e4-47ca-8c4e-00d70d4e3aaf",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "678d69a9-36c8-4ceb-9c03-e5d9abd0a3cf",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "121ff3e6-efc1-49a4-9316-ea3cc421f65e",
+			"key": "JWT_TOKEN",
+			"value": "REPLACE_ME",
+			"type": "string"
+		}
+	]
+}
