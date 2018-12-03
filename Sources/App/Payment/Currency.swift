@@ -1,4 +1,5 @@
 import Transaction
+import Foundation
 import PayPal
 import Stripe
 
@@ -9,11 +10,11 @@ extension AmountConverter {
 }
 
 extension PayPal.Currency {
-    func amount(for amount: Int?) -> String? {
+    func amount(for amount: Int?) -> Decimal? {
         return self.amount(for: amount, as: self)
     }
     
-    func amount(for amount: Int) -> String? {
+    func amount(for amount: Int) -> Decimal? {
         return self.amount(for: amount, as: self)
     }
 }

@@ -10,6 +10,10 @@ let payload = "skelpo-payload"
 
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
+    guard let paypalID = Environment.get("PAYPAL_CLIENT_ID"), let paypalSecret = Environment.get("PAYPAL_CLIENT_SECRET") else {
+        throw Abort(.internalServerError, reason: "Missing environment variable(s) `PAYPAL_CLIENT_ID` and/or `PAYPAL_CLIENT_SECRET`")
+    }
+    
     
     /// Register providers first
     try services.register(FluentMySQLProvider())
@@ -20,7 +24,7 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     })
     
     try services.register(StripeProvider())
-    try services.register(PayPalProvider())
+    try services.register(PayPalProvider(id: paypalID, secret: paypalSecret))
 
     
     /// Register routes to the router

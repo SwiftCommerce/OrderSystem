@@ -58,15 +58,20 @@ extension Order: PayPalPaymentRepresentable {
         return map(shipping, items, order, products) { shipping, items, order, products -> PayPal.Payment in
             let address: PayPal.Address?
             let recipient = order?.firstname + order?.lastname
-            if let street = shipping?.street, let city = shipping?.city, let country = shipping?.country, let zip = shipping?.zip {
-                address = try PayPal.Address(
+            if
+                let street = shipping?.street,
+                let city = shipping?.city,
+                let country = Country(rawValue: shipping?.country ?? "nil"),
+                let zip = shipping?.zip
+            {
+                address = PayPal.Address(
                     recipientName: recipient,
                     defaultAddress: false,
                     line1: street,
                     line2: shipping?.street2,
                     city: city,
-                    state: shipping?.state,
-                    countryCode: country,
+                    state: Province(rawValue: shipping?.state ?? "nil"),
+                    country: country,
                     postalCode: zip,
                     phone: order?.phone,
                     type: nil
@@ -81,12 +86,12 @@ extension Order: PayPalPaymentRepresentable {
                 
                 return try PayPal.Payment.Item(
                     quantity: String(describing: item.quantity),
-                    price: currency.amount(for: item.total(for: price.cents)),
+                    price: String(describing: currency.amount(for: item.total(for: price.cents))),
                     currency: currency,
                     sku: product.sku,
                     name: product.name,
                     description: product.description,
-                    tax: currency.amount(for: item.tax(for: price.cents))
+                    tax: String(describing: currency.amount(for: item.tax(for: price.cents)))
                 )
             }
             let list = try PayPal.Payment.ItemList(items: listItems, address: address, phoneNumber: nil)
@@ -101,7 +106,7 @@ extension Order: PayPalPaymentRepresentable {
                 return item.tax(for: price)
             }.reduce(0, +)
             
-            let details = try DetailedAmount.Detail(
+            let details = DetailedAmount.Detail(
                 subtotal: currency.amount(for: subtotal),
                 shipping: currency.amount(for: content.shipping),
                 tax: currency.amount(for: tax),
@@ -114,7 +119,7 @@ extension Order: PayPalPaymentRepresentable {
             let shipping: Int? = (content.shipping ?? 0) - (content.shippingDiscount ?? 0)
             let fees = shipping + content.handling + content.insurence + content.giftWrap
             let total = subtotal + tax + (fees ?? 0)
-            let amount = try DetailedAmount(
+            let amount = DetailedAmount(
                 currency: currency,
                 total: currency.amount(for: total),
                 details: details
