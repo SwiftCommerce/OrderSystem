@@ -227,6 +227,15 @@
         }
       },
       {
+        "package": "TaxCalculator",
+        "repositoryURL": "https://github.com/skelpo/TaxCalculator.git",
+        "state": {
+          "branch": null,
+          "revision": "b0446534755be1e5d3bfade4e37985fa5a7805cf",
+          "version": "0.1.0"
+        }
+      },
+      {
         "package": "TemplateKit",
         "repositoryURL": "https://github.com/vapor/template-kit.git",
         "state": {
