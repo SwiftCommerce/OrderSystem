@@ -6,6 +6,9 @@ typealias PayPalPayment = TransactionPayPal.PayPalPayment<Order, Order.Payment>
 typealias PayPalController = PaymentController<PayPalPayment>
 
 extension Order.Payment: ExecutablePayment {}
+extension Product {
+    typealias List = [Item.ID: (product: Product, price: Price)]
+}
 
 extension Order: PayPalPaymentRepresentable {
     func paypal(on container: Container, content: PaymentGenerationContent) -> EventLoopFuture<PayPal.Payment> {
@@ -68,7 +71,7 @@ extension Order: PayPalPaymentRepresentable {
         }
     }
     
-    func products(on container: Container, for items: [Item], currency: String) -> Future<[Item.ID: (product: Product, price: Price)]> {
+    func products(on container: Container, for items: [Item], currency: String) -> Future<Product.List> {
         return container.products(for: items, reduceInto: [:]) { result, item, product in
             let id = try item.requireID()
             guard let price = product.prices?.first(where: { $0.active && $0.currency.lowercased() == currency.lowercased() }) else {
@@ -83,12 +86,7 @@ extension Order: PayPalPaymentRepresentable {
     }
     
     func items(
-        on conn: DatabaseConnectable,
-        order id: Order.ID,
-        items: [Item],
-        currency: Currency,
-        tax: TaxCalculator.Result,
-        products: [Item.ID: (product: Product, price: Price)]
+        on conn: DatabaseConnectable, order id: Order.ID, items: [Item], currency: Currency, tax: TaxCalculator.Result, products: Product.List
     ) -> Future<PayPal.Payment.ItemList> {
         return self.address(on: conn, order: id).map { address in
             let listItems = try items.compactMap { item -> PayPal.Payment.Item? in
@@ -121,7 +119,9 @@ extension Order: PayPalPaymentRepresentable {
         )
     }
     
-    func amount(details: DetailedAmount.Detail, content: PaymentGenerationContent, subtotal: Int, tax: Int, currency: Currency) -> PayPal.DetailedAmount {
+    func amount(
+        details: DetailedAmount.Detail, content: PaymentGenerationContent, subtotal: Int, tax: Int, currency: Currency
+    ) -> PayPal.DetailedAmount {
         let shipping: Int? = (content.shipping ?? 0) - (content.shippingDiscount ?? 0)
         let fees = shipping + content.handling + content.insurence + content.giftWrap
         let total = subtotal + tax + (fees ?? 0)
