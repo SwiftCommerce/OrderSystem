@@ -11,4 +11,11 @@ final class OrderService: ServiceType {
     let paypalPayeeEmail: String? = "dispute@skelpo.com"
     let paypalRedirectApprove: String? = "http://www.skelpo.codes/PayPal"
     let paypalRedirectCancel: String? = "http://www.skelpo.codes/PayPal"
+    
+    /// The ID of the address where the orders will be shipped from.
+    /// This is used for calculating taxes using TaxJar if you have it integrated.
+    ///
+    /// The order ID of the address can be any value that will never match an actual
+    /// order. If you are usiung `Int`, a negative value could do the trick.
+    let merchantAddress: Address.ID? = nil
 }
