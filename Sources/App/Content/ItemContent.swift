@@ -7,14 +7,14 @@ import Vapor
 struct ItemContent: Content {
     let productID: Item.ProductID
     let quantity: Int
-    let taxRate: Decimal
+    let taxCode: String?
     
     func save(on conn: DatabaseConnectable, order: Order.ID) -> Future<Item> {
         let item = Item(
             orderID: order,
             productID: self.productID,
             quantity: self.quantity,
-            taxRate: self.taxRate
+            taxCode: self.taxCode
         )
         return item.save(on: conn)
     }
