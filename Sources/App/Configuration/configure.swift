@@ -1,3 +1,4 @@
+import TaxCalculator
 import JWTMiddleware
 import FluentMySQL
 import Transaction
@@ -71,4 +72,8 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     services.register(Storage())
     services.register(PayPalPayment.self)
     services.register(StripeCC.self)
+    
+    services.register(factory: { (container) -> GenericTaxCalculator in
+        return GenericTaxCalculator(percentage: 7.25, on: container)
+    })
 }
