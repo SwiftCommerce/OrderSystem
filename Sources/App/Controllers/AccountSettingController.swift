@@ -62,10 +62,3 @@ final class AccountSettingController: RouteCollection {
         }
     }
 }
-
-struct AccountSettingContent: Content {
-    let id: AccountSetting.ID?
-    let accountID: Account.ID?
-    let name: String
-    let value: String
-}
