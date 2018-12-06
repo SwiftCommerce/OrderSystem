@@ -28,7 +28,7 @@ extension Order: PaymentRepresentable {
         content: PaymentGenerationContent,
         externalID: ID?
     ) -> EventLoopFuture<Order.Payment> where Method : PaymentMethod {
-        return container.databaseConnection(to: .mysql).flatMap { connection -> Future<(Int, Int, Order.Database.Connection)> in
+        return container.databaseConnection(to: .mysql).flatMap { connection -> Future<(Int, TaxCalculator.Result, Order.Database.Connection)> in
             let total = self.total(on: container, currency: content.currency)
             let tax = self.tax(on: container, currency: content.currency)
             return map(total, tax) { return ($0, $1, connection) }
@@ -46,7 +46,7 @@ extension Order: PaymentRepresentable {
             if let external = externalID {
                 payment.externalID = String(describing: external)
             }
-            payment.tax = tax
+            payment.tax = NSDecimalNumber(decimal: tax.total).intValue
             payment.shipping = content.shipping
             payment.handling = content.handling
             payment.shippingDiscount = content.shippingDiscount

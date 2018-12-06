@@ -35,6 +35,7 @@ extension Order: PayPalPaymentRepresentable {
         }
         
         let currency = Currency(code: content.currency) ?? .usd
+        let tax = self.tax(on: container, currency: currency.rawValue)
         let shipping = Address.query(on: conn).filter(\.orderID == id).filter(\.shipping == true).first()
         let items = Item.query(on: conn).filter(\.orderID == id).all()
         let order = Order.query(on: conn).filter(\.id == id).first()
@@ -55,7 +56,7 @@ extension Order: PayPalPaymentRepresentable {
             }
         }
         
-        return map(shipping, items, order, products) { shipping, items, order, products -> PayPal.Payment in
+        return map(tax, shipping, items, order, products) { tax, shipping, items, order, products -> PayPal.Payment in
             let address: PayPal.Address?
             let recipient = order?.firstname + order?.lastname
             if
@@ -81,8 +82,10 @@ extension Order: PayPalPaymentRepresentable {
             }
             
             let listItems = try items.compactMap { item -> PayPal.Payment.Item? in
-                guard let id = item.id, let element = products[id] else { return nil }
+                guard let id = item.id, let element = products[id], let itemTax = tax.items[id.description] else { return nil }
+                
                 let (product, price) = element
+                let tax = NSDecimalNumber(decimal: itemTax).intValue
                 
                 return try PayPal.Payment.Item(
                     quantity: String(describing: item.quantity),
@@ -91,7 +94,7 @@ extension Order: PayPalPaymentRepresentable {
                     sku: product.sku,
                     name: product.name,
                     description: product.description,
-                    tax: String(describing: currency.amount(for: item.tax(for: price.cents)))
+                    tax: String(describing: currency.amount(for: tax))
                 )
             }
             let list = try PayPal.Payment.ItemList(items: listItems, address: address, phoneNumber: nil)
@@ -101,10 +104,7 @@ extension Order: PayPalPaymentRepresentable {
                 guard let id = item.id, let price = products[id]?.price.cents else { return nil }
                 return item.total(for: price)
             }.reduce(0, +)
-            let tax = items.compactMap { item -> Int? in
-                guard let id = item.id, let price = products[id]?.price.cents else { return nil }
-                return item.tax(for: price)
-            }.reduce(0, +)
+            let tax = NSDecimalNumber(decimal: tax.total).intValue
             
             let details = DetailedAmount.Detail(
                 subtotal: currency.amount(for: subtotal),

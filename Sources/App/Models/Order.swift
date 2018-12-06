@@ -47,8 +47,8 @@ final class Order: Content, MySQLModel, Migration, Parameter {
         }
     }
 
-    func tax(on container: Container, currency: String) -> Future<Int> {
-        return TaxCalculator(container: container).calculate(from: (self, currency)).map { NSDecimalNumber(decimal: $0).intValue }
+    func tax(on container: Container, currency: String) -> Future<TaxCalculator.Result> {
+        return TaxCalculator(container: container).calculate(from: (self, currency))
     }
 
     func items(with conn: DatabaseConnectable)throws -> Future<[Item]> {
@@ -117,7 +117,9 @@ extension Order {
 
         let currency = request.content[String.self, at: "currency"]
         let total = currency.flatMap { $0 == nil ? request.future(nil) : self.total(on: request, currency: $0!).map { $0 } }
-        let tax = currency.flatMap { $0 == nil ? request.future(nil) : self.tax(on: request, currency: $0!).map { $0 } }
+        let tax = currency.flatMap {
+            return $0.map { self.tax(on: request, currency: $0).map { NSDecimalNumber.init(decimal: $0.total).intValue } } ?? request.future(nil)
+        }
         
         return try map(
             total,
