@@ -5,13 +5,7 @@ import PayPal
 typealias PayPalPayment = TransactionPayPal.PayPalPayment<Order, Order.Payment>
 typealias PayPalController = PaymentController<PayPalPayment>
 
-extension Order.Payment: ExecutablePayment {
-    var total: Int {
-        let shipping: Int? = (self.shipping ?? 0) - (self.shippingDiscount ?? 0)
-        let fees: Int? = self.tax + self.handling + shipping + self.insurence + self.giftWrap
-        return self.subtotal + (fees ?? 0)
-    }
-}
+extension Order.Payment: ExecutablePayment {}
 
 extension Order: PayPalPaymentRepresentable {
     func paypal(on container: Container, content: PaymentGenerationContent) -> EventLoopFuture<PayPal.Payment> {
