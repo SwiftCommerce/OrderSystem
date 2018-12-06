@@ -39,7 +39,7 @@ final class Order: Content, MySQLModel, Migration, Parameter {
             return try self.items(with: conn)
         }.flatMap { items in
             return container.products(for: items, reduceInto: 0) { total, item, product in
-                guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
+                guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() && $0.active }).first else {
                     throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
                 }
                 total += item.total(for: price.cents)
@@ -48,16 +48,7 @@ final class Order: Content, MySQLModel, Migration, Parameter {
     }
 
     func tax(on container: Container, currency: String) -> Future<Int> {
-        return container.databaseConnection(to: .mysql).flatMap { conn in
-            return try self.items(with: conn)
-        }.flatMap { items in
-            return container.products(for: items, reduceInto: 0) { total, item, product in
-                guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() }).first else {
-                    throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
-                }
-                total += item.tax(for: price.cents)
-            }
-        }        
+        return TaxCalculator(container: container).calculate(from: (self, currency)).map { NSDecimalNumber(decimal: $0).intValue }
     }
 
     func items(with conn: DatabaseConnectable)throws -> Future<[Item]> {
