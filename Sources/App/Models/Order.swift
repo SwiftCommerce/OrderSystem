@@ -110,7 +110,8 @@ extension Order {
                 exp: Date.distantFuture.timeIntervalSince1970,
                 iat: Date().timeIntervalSince1970,
                 email: email,
-                id: nil
+                id: nil,
+                status: .standard
             )
             token = try signer.sign(user)
         }

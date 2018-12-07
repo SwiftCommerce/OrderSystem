@@ -86,6 +86,9 @@ final class OrderController: RouteCollection {
     }
     
     func removeItem(_ request: Request)throws -> Future<HTTPStatus> {
+        let payload = try request.get(.payloadKey, as: User.self)
+        
+        
         return try request.parameters.next(Order.self).flatMap { order in
             let itemID = try request.parameters.next(Item.ID.self)
             let deletedItem = try Item.query(on: request).filter(\.orderID == order.requireID()).filter(\.id == itemID).delete()

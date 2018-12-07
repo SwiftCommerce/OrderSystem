@@ -7,7 +7,8 @@ func commands(config: inout CommandConfig)throws {
             exp: Date.distantFuture.timeIntervalSince1970,
             iat: Date().timeIntervalSince1970,
             email: "jwt.token@example.com",
-            id: Int.random(in: 0...Int.max)
+            id: Int.random(in: 0...Int.max),
+            status: .admin
         )
     }
     
