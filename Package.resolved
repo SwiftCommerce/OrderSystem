@@ -105,8 +105,8 @@
         "repositoryURL": "https://github.com/skelpo/JWTMiddleware.git",
         "state": {
           "branch": null,
-          "revision": "696b3ea49a4548484d28f79cc2c8bd10751ccb27",
-          "version": "0.8.2"
+          "revision": "466838e04ef1c2fdf7fe234162df5be7a9dfbf6c",
+          "version": "0.9.0"
         }
       },
       {
@@ -132,8 +132,8 @@
         "repositoryURL": "https://github.com/vapor/mysql.git",
         "state": {
           "branch": null,
-          "revision": "355fdc8c60a4869026ff8f19e21f5d5bdbb08e62",
-          "version": "3.1.0"
+          "revision": "f479a97b3a0a6563fcfcaa9aad4c56e07138a22c",
+          "version": "3.1.1"
         }
       },
       {
@@ -186,8 +186,8 @@
         "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
           "branch": null,
-          "revision": "035962e6b6e03c8721a91a9b96dc084289795cb4",
-          "version": "1.11.0"
+          "revision": "a20e129c22ad00a51c902dca54a5456f90664780",
+          "version": "1.12.0"
         }
       },
       {
