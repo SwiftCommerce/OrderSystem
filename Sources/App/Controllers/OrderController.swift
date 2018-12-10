@@ -10,6 +10,7 @@ final class OrderController: RouteCollection {
         orders.post(OrderContent.self, use: create)
         protected.get(use: all)
         protected.get(Order.parameter, use: get)
+        protected.patch(OrderContent.self, at: Order.parameter, use: update)
         
         protected.post(ItemContent.self, at: Order.parameter, "items", use: addItem)
         protected.delete(Order.parameter, "items", Item.ID.parameter, use: removeItem)
@@ -76,6 +77,13 @@ final class OrderController: RouteCollection {
 
         let order = Order.query(on: request).filter(\.userID == user.id).filter(\.id == id).first().unwrap(or: Abort(.notFound))
         return order.flatMap { try $0.response(on: request) }
+    }
+    
+    func update(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
+        return self.order(for: request).map{ order -> Order in
+            content.populate(order: order)
+            return order
+        }.save(on: request).flatMap { try $0.response(on: request) }
     }
     
     func addItem(_ request: Request, content: ItemContent)throws -> Future<Order.Response> {
