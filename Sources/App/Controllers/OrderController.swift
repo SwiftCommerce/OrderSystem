@@ -79,20 +79,35 @@ final class OrderController: RouteCollection {
     }
     
     func addItem(_ request: Request, content: ItemContent)throws -> Future<Order.Response> {
-        return try request.parameters.next(Order.self).flatMap { order in
+        return self.order(for: request).flatMap { order in
             let newItem = try content.save(on: request, order: order.requireID())
             return newItem.flatMap { _ in try order.response(on: request) }
         }
     }
     
     func removeItem(_ request: Request)throws -> Future<HTTPStatus> {
-        let payload = try request.get(.payloadKey, as: User.self)
-        
-        
-        return try request.parameters.next(Order.self).flatMap { order in
+        return self.order(for: request).flatMap { order in
             let itemID = try request.parameters.next(Item.ID.self)
             let deletedItem = try Item.query(on: request).filter(\.orderID == order.requireID()).filter(\.id == itemID).delete()
             return deletedItem.transform(to: .noContent)
+        }
+    }
+}
+
+extension OrderController {
+    func order(for request: Request) -> Future<Order> {
+        do {
+            let payload = try request.get(.payloadKey, as: User.self)
+            
+            if let status = payload?.status, status == .admin {
+                return try request.parameters.next(Order.self)
+            } else if let user = payload?.id, let raw = request.parameters.rawValues(for: Order.self).first, let id = Order.ID(raw) {
+                return Order.query(on: request).filter(\.userID == user).filter(\.id == id).first().unwrap(or: Abort(.notFound))
+            } else {
+                throw Abort(.notFound)
+            }
+        } catch let error {
+            return request.future(error: error)
         }
     }
 }
