@@ -64,6 +64,7 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     controllers.middleware(JWTStorageMiddleware<User>())
     controllers.add(PayPalController(structure: .separate))
     controllers.add(StripeController(structure: .mixed))
+    controllers.add(CashController(structure: .mixed))
     services.register(controllers)
     
     services.register(OrderService.self)
