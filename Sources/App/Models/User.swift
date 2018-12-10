@@ -20,7 +20,7 @@ struct User: IdentifiableJWTPayload {
 }
 
 extension User {
-    enum Status: RawRepresentable, Codable {
+    enum Status: RawRepresentable, Codable, Equatable {
         case admin
         case moderator
         case standard

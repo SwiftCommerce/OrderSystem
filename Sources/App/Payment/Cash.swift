@@ -19,6 +19,15 @@ struct CashPayment: PaymentMethod {
     }
     
     func payment(for purchase: Order, with content: PaymentGenerationContent) -> EventLoopFuture<Order.Payment> {
+        do {
+            if let request = self.container as? Request {
+                let user = try request.get(.payloadKey, as: User.self)
+                guard user?.status?.rawValue == User.Status.admin.rawValue else { throw Abort(.notFound) }
+            }
+        } catch let error {
+            return self.container.future(error: error)
+        }
+        
         return purchase.payment(on: self.container, with: self, content: content, externalID: Optional<String>.none)
     }
     
