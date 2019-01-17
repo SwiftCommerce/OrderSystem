@@ -132,8 +132,8 @@
         "repositoryURL": "https://github.com/vapor/mysql.git",
         "state": {
           "branch": null,
-          "revision": "f479a97b3a0a6563fcfcaa9aad4c56e07138a22c",
-          "version": "3.1.1"
+          "revision": "ac94ebc248b898469be7b97d04a7e712cd22619b",
+          "version": "3.1.2"
         }
       },
       {
@@ -168,8 +168,8 @@
         "repositoryURL": "https://github.com/vapor/sql.git",
         "state": {
           "branch": null,
-          "revision": "839cf96eba296d26151ff1d7a746e9fe35053584",
-          "version": "2.2.0"
+          "revision": "f77bcae7c95150cdab62095e7bf321ed8c7551bd",
+          "version": "2.3.0"
         }
       },
       {
@@ -177,8 +177,8 @@
         "repositoryURL": "https://github.com/vapor-community/stripe-provider.git",
         "state": {
           "branch": null,
-          "revision": "f153cfe204ef92265d94eb66f2fcf6cf2b0ced13",
-          "version": "2.2.4"
+          "revision": "5c0fe29543e709a2e73b82f55dd467dc3de9e760",
+          "version": "2.2.6"
         }
       },
       {
@@ -294,8 +294,8 @@
         "repositoryURL": "https://github.com/vapor/vapor.git",
         "state": {
           "branch": null,
-          "revision": "157d3b15336caa882662cc75024dd04b2e225246",
-          "version": "3.1.0"
+          "revision": "54cbf396147aba77ecb32e7fc75a3d13251551b1",
+          "version": "3.1.1"
         }
       },
       {
