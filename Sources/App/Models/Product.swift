@@ -12,5 +12,7 @@ struct Price: Content {
     let id: Int?
     let cents: Int
     let active: Bool
+    let activeTo: Date
+    let activeFrom: Date
     let currency: String
 }

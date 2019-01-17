@@ -74,7 +74,15 @@ extension Order: PayPalPaymentRepresentable {
     func products(on container: Container, for items: [Item], currency: String) -> Future<Product.List> {
         return container.products(for: items, reduceInto: [:]) { result, item, product in
             let id = try item.requireID()
-            guard let price = product.prices?.first(where: { $0.active && $0.currency.lowercased() == currency.lowercased() }) else {
+            let now = Date()
+            
+            let prices = product.prices?.filter { price in
+                return price.active && price.currency.lowercased() == currency.lowercased() && price.activeFrom <= now && price.activeTo > now
+            }.sorted { first, second in
+                return first.activeFrom > second.activeFrom
+            }
+            
+            guard let price = prices?.first else {
                 throw PayPalError(
                     status: .failedDependency,
                     identifier: "noPrice",
@@ -95,7 +103,7 @@ extension Order: PayPalPaymentRepresentable {
 
                 return try PayPal.Payment.Item(
                     quantity: String(describing: item.quantity),
-                    price: String(describing: currency.amount(for: item.total(for: price.cents))),
+                    price: String(describing: currency.amount(for: price.cents)),
                     currency: currency,
                     sku: product.sku,
                     name: product.name,
