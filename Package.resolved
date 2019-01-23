@@ -159,8 +159,8 @@
         "repositoryURL": "https://github.com/skelpo/PayPal.git",
         "state": {
           "branch": null,
-          "revision": "0680ad5fd26dd2e888d92e68611bd946c6565b8e",
-          "version": "0.3.1"
+          "revision": "54e8cf3b6e0e28789b3e27af7737893c30b95176",
+          "version": "0.3.2"
         }
       },
       {
