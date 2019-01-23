@@ -1,4 +1,5 @@
 import TransactionPayPal
+import Countries
 import Fluent
 import PayPal
 
@@ -102,16 +103,16 @@ extension Order: PayPalPaymentRepresentable {
                 let tax = NSDecimalNumber(decimal: itemTax).intValue
 
                 return try PayPal.Payment.Item(
-                    quantity: String(describing: item.quantity),
-                    price: String(describing: currency.amount(for: price.cents)),
+                    quantity: .init(item.quantity),
+                    price: .init(currency.amount(for: price.cents)),
                     currency: currency,
-                    sku: product.sku,
-                    name: product.name,
-                    description: product.description,
+                    sku: .init(product.sku),
+                    name: .init(product.name),
+                    description: .init(product.description),
                     tax: String(describing: currency.amount(for: tax))
                 )
             }
-            return try PayPal.Payment.ItemList(items: listItems, address: address, phoneNumber: nil)
+            return PayPal.Payment.ItemList(items: listItems, address: address, phoneNumber: nil)
         }
     }
     
@@ -142,7 +143,7 @@ extension Order: PayPalPaymentRepresentable {
     }
     
     func transaction(amount: DetailedAmount, list: PayPal.Payment.ItemList, config: OrderService)throws -> PayPal.Payment.Transaction {
-        return try PayPal.Payment.Transaction(
+        return PayPal.Payment.Transaction(
             amount: amount,
             payee: Payee(email: config.paypalPayeeEmail, merchant: nil, metadata: nil),
             description: nil,
@@ -157,7 +158,7 @@ extension Order: PayPalPaymentRepresentable {
     }
     
     func payment(transaction: PayPal.Payment.Transaction, config: OrderService)throws -> PayPal.Payment {
-        return try PayPal.Payment(
+        return PayPal.Payment(
             intent: .sale,
             payer: PaymentPayer(method: .paypal, funding: nil, info: nil),
             context: nil,
