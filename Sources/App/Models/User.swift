@@ -1,6 +1,7 @@
 import Foundation
 import JWT
 import JWTMiddleware
+import Vapor
 
 /// A representation of the payload used in the access tokens
 /// for this service's authentication.
@@ -45,4 +46,10 @@ extension User {
         }
     }
 
+}
+
+extension JWTError: AbortError {
+    public var status: HTTPResponseStatus {
+        return .unauthorized
+    }
 }
