@@ -10,6 +10,7 @@ final class Order: Content, MySQLModel, Migration, Parameter {
 
     var status: Order.Status
     var paymentStatus: Order.PaymentStatus
+    var total: Int?
     var paidTotal: Int
     var refundedTotal: Int
 
@@ -34,7 +35,7 @@ final class Order: Content, MySQLModel, Migration, Parameter {
 
     var guest: Bool { return self.userID == nil }
 
-    func total(on container: Container, currency: String) -> Future<Int> {
+    func calculateTotal(on container: Container, currency: String) -> Future<Int> {
         return container.databaseConnection(to: .mysql).flatMap { conn in
             return try self.items(with: conn)
         }.flatMap { items in
@@ -117,7 +118,9 @@ extension Order {
         }
 
         let currency = request.content[String.self, at: "currency"]
-        let total = currency.flatMap { $0 == nil ? request.future(nil) : self.total(on: request, currency: $0!).map { $0 } }
+        let total = self.total == nil ?
+            currency.flatMap { $0 == nil ? request.future(nil) : self.calculateTotal(on: request, currency: $0!).map { $0 } } :
+            request.future(self.total!)
         let tax = currency.flatMap {
             return $0.map { self.tax(on: request, currency: $0).map { NSDecimalNumber.init(decimal: $0.total).intValue } } ?? request.future(nil)
         }

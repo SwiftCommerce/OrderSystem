@@ -1,5 +1,5 @@
 import Transaction
-import Fluent
+import FluentMySQL
 import Vapor
 
 extension Order.Payment {
@@ -19,13 +19,13 @@ extension Order: PaymentRepresentable {
         content: PaymentGenerationContent,
         externalID: ID?
     ) -> EventLoopFuture<Order.Payment> where Method : PaymentMethod {
-        return container.databaseConnection(to: .mysql).flatMap { connection -> Future<(Int, TaxCalculator.Result, Order.Database.Connection)> in
-            let total = self.total(on: container, currency: content.currency)
-            let tax = self.tax(on: container, currency: content.currency)
-            return map(total, tax) { return ($0, $1, connection) }
-        }.flatMap { requiredInfo -> Future<Order.Payment> in
-            let (total, tax, connection) = requiredInfo
-
+        return flatMap(
+            container.databaseConnection(to: .mysql) as Future<MySQLConnection>,
+            self.calculateTotal(on: container, currency: content.currency),
+            self.tax(on: container, currency: content.currency)
+        ) { (connection: MySQLDatabase.Connection, total: Int, tax: TaxCalculator.Result) -> Future<Order.Payment> in
+            self.total = total
+            
             let payment = try Order.Payment(
                 orderID: self.requireID(),
                 paymentMethod: Method.slug,
@@ -43,8 +43,8 @@ extension Order: PaymentRepresentable {
             payment.shippingDiscount = content.shippingDiscount
             payment.insurence = content.insurence
             payment.giftWrap = content.giftWrap
-
-            return payment.save(on: connection)
+            
+            return self.update(on: connection).transform(to: connection).flatMap(payment.create)
         }
     }
 
