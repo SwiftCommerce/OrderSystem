@@ -37,8 +37,8 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     
     /// Register middleware
     var middlewares = MiddlewareConfig() // Create _empty_ middleware config
-    middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
     middlewares.use(CORSMiddleware(configuration: .default()))
+    middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
     services.register(middlewares)
     
     let stripe = StripeConfig(productionKey: Environment.get("STRIPE_KEY") ?? "", testKey: Environment.get("STRIPE_TEST_KEY") ?? "")
