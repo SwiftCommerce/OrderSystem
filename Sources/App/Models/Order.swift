@@ -57,15 +57,15 @@ final class Order: Content, MySQLModel, Migration, Parameter {
 }
 
 extension Order {
-    static var createdAtKey: WritableKeyPath<Order, Date?> {
+    static var createdAtKey: TimestampKey? {
         return \.createdAt
     }
 
-    static var updatedAtKey: WritableKeyPath<Order, Date?> {
+    static var updatedAtKey: TimestampKey? {
         return \.updatedAt
     }
 
-    static var deletedAtKey: WritableKeyPath<Order, Date?> {
+    static var deletedAtKey: TimestampKey? {
         return \.deletedAt
     }
 }
