@@ -12,15 +12,26 @@ final class Item: Content, MySQLModel, Migration {
     let taxCode: String?
     
     var quantity: Int
+    var paidTotal: Int?
     
     init(orderID: Int, productID: ProductID, quantity: Int, taxCode: String?) {
         self.orderID = orderID
         self.productID = productID
         self.taxCode = taxCode
         self.quantity = quantity
+        self.paidTotal = nil
     }
     
     func total(for price: Int) -> Int { return price * quantity }
+    
+    func saveTotal(from product: Product, for currency: String, on conn: DatabaseConnectable) -> Future<Item> {
+        if let price = product.currenctPrice(for: currency) {
+            self.paidTotal = price.cents
+            return self.update(on: conn)
+        } else {
+            return conn.future(self)
+        }
+    }
     
     public static func prepare(on connection: MySQLConnection) -> Future<Void> {
         return Database.create(self, on: connection) { builder in
