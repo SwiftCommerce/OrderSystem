@@ -37,7 +37,7 @@ final class Order: Content, MySQLModel, Migration, Parameter {
 
     func calculateTotal(on container: Container, currency: String) -> Future<Int> {
         return container.databaseConnection(to: .mysql).flatMap { conn in
-            return try self.items(with: conn)
+            return self.items(with: conn)
         }.flatMap { items in
             return container.products(for: items, reduceInto: 0) { total, item, product in
                 guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() && $0.active }).first else {
@@ -52,8 +52,12 @@ final class Order: Content, MySQLModel, Migration, Parameter {
         return TaxCalculator(container: container).calculate(from: (self, currency))
     }
 
-    func items(with conn: DatabaseConnectable)throws -> Future<[Item]> {
-        return try Item.query(on: conn).filter(\.orderID == self.requireID()).all()
+    func items(with conn: DatabaseConnectable) -> Future<[Item]> {
+        do {
+            return try Item.query(on: conn).filter(\.orderID == self.requireID()).all()
+        } catch let error {
+            return conn.future(error: error)
+        }
     }
 }
 
