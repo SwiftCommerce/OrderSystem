@@ -10,6 +10,13 @@ extension Order.Payment {
     }
 }
 
+extension Order {
+    func setTotal(to value: Int, on conn: DatabaseConnectable) -> Future<Order> {
+        self.total = value
+        return self.update(on: conn)
+    }
+}
+
 extension Order: PaymentRepresentable {
     typealias ProviderPayment = [String: String]
 
@@ -24,8 +31,6 @@ extension Order: PaymentRepresentable {
             self.calculateTotal(on: container, currency: content.currency),
             self.tax(on: container, currency: content.currency)
         ) { (connection: MySQLDatabase.Connection, total: Int, tax: TaxCalculator.Result) -> Future<Order.Payment> in
-            self.total = total
-            
             let payment = try Order.Payment(
                 orderID: self.requireID(),
                 paymentMethod: Method.slug,
@@ -44,7 +49,7 @@ extension Order: PaymentRepresentable {
             payment.insurence = content.insurence
             payment.giftWrap = content.giftWrap
             
-            return self.update(on: connection).transform(to: connection).flatMap(payment.create)
+            return self.setTotal(to: total, on: connection).transform(to: connection).flatMap(payment.create)
         }
     }
 
