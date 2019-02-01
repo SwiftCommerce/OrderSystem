@@ -1,3 +1,4 @@
+import ModelResponse
 import FluentMySQL
 import JWTVapor
 import Vapor
@@ -75,24 +76,8 @@ extension Order {
     }
 }
 
-extension Array where Iterator.Element == Order {
-
-    func response(on request: Request) throws -> Future<[Order.Response]> {
-        return try self.map({ try $0.response(on: request) }).flatten(on: request)
-    }
-}
-
-extension Future where T == [Order] {
-
-    func response(on request: Request) throws -> Future<[Order.Response]> {
-        return self.flatMap(to: [Order.Response].self, { (this) in
-            return try this.response(on: request)
-        })
-    }
-}
-
-extension Order {
-    struct Response: Vapor.Content {
+extension Order: Respondable {    
+    struct Result: Vapor.Content {
         var id, userID, total, tax: Int?
         var comment, authToken, firstname, lastname, company, email, phone: String?
         var status: Order.Status
@@ -104,45 +89,57 @@ extension Order {
         var billingAddress: Address.Response?
     }
 
-    func response(on request: Request)throws -> Future<Response> {
+    func response(on container: Container) -> Future<Order.Result> {
         let token: String
-        if let bearer = request.http.headers.bearerAuthorization {
+        if let request = container as? Request, let bearer = request.http.headers.bearerAuthorization {
             token = bearer.token
         } else {
-            let signer = try request.make(JWTService.self)
-            guard let email = self.email else { throw Abort(.internalServerError, reason: "Failed to create unique ID email for payment token") }
-            let user = User(
-                exp: Date.distantFuture.timeIntervalSince1970,
-                iat: Date().timeIntervalSince1970,
-                email: email,
-                id: nil,
-                status: .standard
-            )
-            token = try signer.sign(user)
+            do {
+                let signer = try container.make(JWTService.self)
+                guard let email = self.email else {
+                    throw Abort(.internalServerError, reason: "Failed to create unique ID email for payment token")
+                }
+                
+                let user = User(
+                    exp: Date.distantFuture.timeIntervalSince1970,
+                    iat: Date().timeIntervalSince1970,
+                    email: email,
+                    id: nil,
+                    status: .standard
+                )
+                token = try signer.sign(user)
+            } catch let error {
+                return container.future(error: error)
+            }
         }
 
-        let currency = request.content[String.self, at: "currency"]
-        let total = self.total == nil ?
-            currency.flatMap { $0 == nil ? request.future(nil) : self.calculateTotal(on: request, currency: $0!).map { $0 } } :
-            request.future(self.total!)
-        let tax = currency.flatMap {
-            return $0.map { self.tax(on: request, currency: $0).map { NSDecimalNumber.init(decimal: $0.total).intValue } } ?? request.future(nil)
-        }
-        
-        return try map(
-            total,
-            tax,
-            self.items(with: request),
-            Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
-            Address.query(on: request).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
-        ) { total, tax, items, shipping, billing in
-            let email = self.email?.hasSuffix("ordersystem.example.com") ?? false ? nil : self.email
-            return Response(
-                id: self.id, userID: self.userID, total: total, tax: tax, comment: self.comment, authToken: token, firstname: self.firstname,
-                lastname: self.lastname, company: self.company, email: email, phone: self.phone, status: self.status,
-                paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, guest: self.guest,
-                items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
-            )
+        return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Order.Result> in
+            let currency: Future<String?> = (container as? Request)?.content[String.self, at: "currency"] ?? container.future(nil)
+            
+            let costs = currency.flatMap { cur -> Future<(total: Int?, tax: Int?)> in
+                if let currency = cur {
+                    let total = self.total.map(container.future) ?? self.calculateTotal(on: container, currency: currency)
+                    let tax = self.tax(on: container, currency: currency).map { tax in NSDecimalNumber(decimal: tax.total).intValue }
+                    return map(total, tax) { ($0, $1) }
+                } else {
+                    return container.future((self.total, nil))
+                }
+            }
+            
+            return try map(
+                costs,
+                self.items(with: conn),
+                Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
+                Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
+            ) { costs, items, shipping, billing in
+                let email = self.email?.hasSuffix("ordersystem.example.com") ?? false ? nil : self.email
+                return Result(
+                    id: self.id, userID: self.userID, total: costs.total, tax: costs.tax, comment: self.comment, authToken: token,
+                    firstname: self.firstname, lastname: self.lastname, company: self.company, email: email, phone: self.phone, status: self.status,
+                    paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, guest: self.guest,
+                    items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
+                )
+            }
         }
     }
 }

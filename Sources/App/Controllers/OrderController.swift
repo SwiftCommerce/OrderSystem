@@ -16,7 +16,7 @@ final class OrderController: RouteCollection {
         protected.delete(Order.parameter, "items", Item.ID.parameter, use: removeItem)
     }
     
-    func create(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
+    func create(_ request: Request, content: OrderContent)throws -> Future<Order.Result> {
         let order = Order()
         content.populate(order: order)
         
@@ -52,20 +52,18 @@ final class OrderController: RouteCollection {
             let addresses = content.addresses?.save(on: request, order: id) ?? request.future()
             
             return items.and(addresses).transform(to: order)
-        }.flatMap { order in
-            return try order.response(on: request)
-        }
+        }.response(on: request)
     }
     
-    func all(_ request: Request)throws -> Future<[Order.Response]> {
+    func all(_ request: Request)throws -> Future<[Order.Result]> {
         guard let user = try request.get(payload, as: User.self), let id = user.id else {
             throw Abort(.unauthorized, reason: "You must be logged into your account to view past orders.")
         }
-        return try Order.query(on: request).filter(\.userID == id).all().response(on: request)
+        return Order.query(on: request).filter(\.userID == id).all().response(on: request)
     }
     
     
-    func get(_ request: Request)throws -> Future<Order.Response> {
+    func get(_ request: Request)throws -> Future<Order.Result> {
         guard
             let user = try request.get(payload, as: User.self),
             let rawID = request.parameters.rawValues(for: Order.self).first,
@@ -76,20 +74,20 @@ final class OrderController: RouteCollection {
         }
 
         let order = Order.query(on: request).filter(\.userID == user.id).filter(\.id == id).first().unwrap(or: Abort(.notFound))
-        return order.flatMap { try $0.response(on: request) }
+        return order.response(on: request)
     }
     
-    func update(_ request: Request, content: OrderContent)throws -> Future<Order.Response> {
+    func update(_ request: Request, content: OrderContent)throws -> Future<Order.Result> {
         return self.order(for: request).map{ order -> Order in
             content.populate(order: order)
             return order
-        }.save(on: request).flatMap { try $0.response(on: request) }
+        }.save(on: request).response(on: request)
     }
     
-    func addItem(_ request: Request, content: ItemContent)throws -> Future<Order.Response> {
+    func addItem(_ request: Request, content: ItemContent)throws -> Future<Order.Result> {
         return self.order(for: request).flatMap { order in
             let newItem = try content.save(on: request, order: order.requireID())
-            return newItem.flatMap { _ in try order.response(on: request) }
+            return newItem.flatMap { _ in order.response(on: request) }
         }
     }
     
