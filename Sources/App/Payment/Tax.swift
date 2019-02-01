@@ -13,7 +13,7 @@ struct TaxCalculator {
     
     func calculate(from input: (order: Order, currency: String)) -> Future<Result> {
         return container.databaseConnection(to: .mysql).flatMap { conn in
-            return try input.order.items(with: conn)
+            return input.order.items(with: conn)
         }.flatMap { items in
             let rate = try self.container.make(Calculator.self).percentage / 100
             
