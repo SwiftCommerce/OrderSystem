@@ -50,7 +50,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"addresses\": {\n\t\t\"billing\": {\n\t\t\t\"street\": \"156 Plumberry Ln.\",\n\t\t\t\"zip\": \"15620\",\n\t\t\t\"city\": \"Cidersville\",\n\t\t\t\"country\": \"Notherling\"\n\t\t}\n\t},\n\t\"items\": [\n\t\t{\n\t\t\t\"productID\": 1,\n\t\t\t\"quantity\": 4,\n\t\t\t\"taxRate\": 7.42\n\t\t}\t\n\t]\n}"
+							"raw": "{\n\t\"addresses\": {\n\t\t\"billing\": {\n\t\t\t\"street\": \"156 Plumberry Ln.\",\n\t\t\t\"zip\": \"15620\",\n\t\t\t\"city\": \"Cidersville\",\n\t\t\t\"country\": \"Notherling\"\n\t\t}\n\t},\n\t\"items\": [\n\t\t{\n\t\t\t\"productID\": 1,\n\t\t\t\"quantity\": 4\n\t\t}\t\n\t]\n}"
 						},
 						"url": {
 							"raw": "http://localhost:8080/v1/orders",
@@ -124,6 +124,26 @@
 				},
 				{
 					"name": "Get Order by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f1700f40-8a13-41ef-8387-97b54d433965",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Your test name\", function () {",
+									"    var json = pm.response.json();",
+									"    var id = pm.environment.get(\"order\");",
+									"    pm.expect(json.id).to.eql(id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -218,12 +238,20 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
+									"pm.test(\"Received array as response\", function () {",
+									"    var json = pm.response.json();",
+									"    ",
+									"    pm.expect(json).instanceOf(Array);",
+									"});",
+									"",
 									"pm.test(\"New order returned\", function () {",
 									"    var json = pm.response.json();",
 									"    var id = pm.environment.get(\"order\");",
 									"    ",
-									"    var result = json.find(function (el) { el.id ==  id})",
-									"    pm.expect(result.id).to.eql(id);",
+									"    var result = json.find(function (el) { el.id ==  id});",
+									"    if (result) {",
+									"        pm.expect(result.id).to.eql(id);   ",
+									"    }",
 									"});"
 								],
 								"type": "text/javascript"
@@ -312,6 +340,28 @@
 				},
 				{
 					"name": "Add Item to Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8fd2dde7-a645-4b0e-9534-8fdc960c1313",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Added item object\", function () {",
+									"    var json = pm.response.json();",
+									"    var items = json.items.filter(function (el) { el.productID == 2 });",
+									"    ",
+									"    pm.expect(items.length).to.equal(1);",
+									"    pm.expect(items[0].quantity).to.equal(2)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -334,7 +384,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"productID\": 2,\n\t\"quantity\": 2,\n\t\"taxRate\": 7.42\n}"
+							"raw": "{\n\t\"productID\": 2,\n\t\"quantity\": 2\n}"
 						},
 						"url": {
 							"raw": "http://localhost:8080/v1/orders/{{order}}/items",
@@ -412,6 +462,20 @@
 				},
 				{
 					"name": "Remove Item from Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6e5d472f-7b2e-48e2-b460-fb11b72fec82",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -530,6 +594,30 @@
 			"item": [
 				{
 					"name": "Create PayPal Payment For Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f4fbf14f-0061-45ca-bdbf-efb117f187ca",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"`rel` is 'approval_url'\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.rel).to.eql('approval_url');",
+									"});",
+									"",
+									"pm.test(\"`method` is 'REDIRECT'\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.method).to.eql('REDIRECT');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -671,6 +759,26 @@
 				},
 				{
 					"name": "Execute PayPal Payment for Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "49e90629-8822-49c6-bb0c-da97a8084adc",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"`id` equals `order` value\", function () {",
+									"    var json = pm.response.json();",
+									"    var id = pm.environment.get(\"order\");",
+									"    pm.expect(json.id).to.eql(id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -788,6 +896,32 @@
 				},
 				{
 					"name": "Execute Stripe Payment for Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f861a134-67bd-4dae-8fc0-731c11d8e40d",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"`success` is true\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"`message` is 'Success'\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.message).to.eql('Success');",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -804,64 +938,21 @@
 							{
 								"key": "Content-Type",
 								"name": "Content-Type",
-								"value": "application/x-www-form-urlencoded",
+								"value": "application/json",
 								"type": "text"
 							}
 						],
 						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "stripeToken",
-									"value": "tok_1DPGsL2DSdLg2fx4QreVIQGU",
-									"description": "The Strip credit card token, returned from the Stripe API when the data is submitted from your front-end. (Required)",
-									"type": "text"
-								},
-								{
-									"key": "currency",
-									"value": "usd",
-									"description": "The currency to use for the payment. (Required)",
-									"type": "text"
-								},
-								{
-									"key": "shipping",
-									"value": "3000",
-									"description": "The price of shipping.",
-									"type": "text"
-								},
-								{
-									"key": "shippingDiscount",
-									"value": "1200",
-									"description": "The discount the customer receives on the shipping price.",
-									"type": "text"
-								},
-								{
-									"key": "handling",
-									"value": "1500",
-									"description": "The price for handing.",
-									"type": "text"
-								},
-								{
-									"key": "insurence",
-									"value": "2000",
-									"description": "The price for insurence.",
-									"type": "text"
-								},
-								{
-									"key": "giftWrap",
-									"value": "250",
-									"description": "The price for gift wrap.",
-									"type": "text"
-								}
-							]
+							"mode": "raw",
+							"raw": "{\n\t\"stripeToken\": \"tok_1Dz2iT2DSdLg2fx4o0efKbkz\",\n\t\"currency\": \"usd\",\n\t\"shipping\": 3000,\n\t\"shippingDiscount\": 1200,\n\t\"handling\": 1500,\n\t\"insurence\": 2000,\n\t\"giftWrap\": 250\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8080/v1/orders/{{order}}/payment/stripe-cc",
+							"raw": "http://localhost:8082/v1/orders/{{order}}/payment/stripe-cc",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8082",
 							"path": [
 								"v1",
 								"orders",
@@ -1003,6 +1094,24 @@
 		},
 		{
 			"name": "Service Health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7345f8b6-4c17-4685-8bda-a574a0de2f30",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.equal(\"All Good!\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -1100,7 +1209,7 @@
 	],
 	"variable": [
 		{
-			"id": "121ff3e6-efc1-49a4-9316-ea3cc421f65e",
+			"id": "3e08214e-c517-4c29-8f5b-cd17b4c837f3",
 			"key": "JWT_TOKEN",
 			"value": "REPLACE_ME",
 			"type": "string"
