@@ -5,6 +5,7 @@ import PackageDescription
 let package = Package(
     name: "OrderSystem",
     dependencies: [
+        .package(url: "https://github.com/skelpo/ModelResponse.git", from: "0.1.0"),
         .package(url: "https://github.com/skelpo/TaxCalculator.git", from: "0.1.0"),
         .package(url: "https://github.com/skelpo/Transaction.git", from: "0.5.0"),
         .package(url: "https://github.com/skelpo/TransactionStripe.git", from: "0.2.1"),
@@ -23,7 +24,8 @@ let package = Package(
             "Transaction",
             "TransactionStripe",
             "TransactionPayPal",
-            "TaxCalculator"
+            "TaxCalculator",
+            "ModelResponse"
         ]),
         .target(name: "Run", dependencies: ["App"]),
         .testTarget(name: "AppTests", dependencies: ["App"])
