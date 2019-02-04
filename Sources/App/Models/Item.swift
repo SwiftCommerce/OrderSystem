@@ -48,17 +48,19 @@ extension Item {
         let orderID, quantity: Int
         let productID: ProductID
         let taxCode: String?
+        let paid: Int?
     }
     struct OrderResponse: Content {
         let quantity: Int
         let productID: ProductID
         let taxCode: String?
+        let paid: Int?
     }
     
     var response: Response {
-        return Response(orderID: self.orderID, quantity: self.quantity, productID: self.productID, taxCode: self.taxCode)
+        return Response(orderID: self.orderID, quantity: self.quantity, productID: self.productID, taxCode: self.taxCode, paid: self.paidTotal)
     }
     var orderResponse: OrderResponse {
-        return OrderResponse(quantity: self.quantity, productID: self.productID, taxCode: self.taxCode)
+        return OrderResponse(quantity: self.quantity, productID: self.productID, taxCode: self.taxCode, paid: self.paidTotal)
     }
 }
