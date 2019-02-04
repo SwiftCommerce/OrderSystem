@@ -6,9 +6,9 @@ final class OrderService: ServiceType {
     }
     
     let guestCheckout: Bool = true
-    let productService: String? = nil
+    let productService: String = Environment.get("PRODUCT_API") ?? "http://localhost:8080/v1/products"
     
-    let paypalPayeeEmail: String? = "dispute@skelpo.com"
+    let paypalPayeeEmail: String? = Environment.get("PAYPAL_EMAIL") ?? "dispute@skelpo.com"
     let paypalRedirectApprove: String? = Environment.get("PAYPAL_REDIRECT_APPROVE") ?? "http://localhost:8081/#/order?loading=true"
     let paypalRedirectCancel: String? = Environment.get("PAYPAL_REDIRECT_CANCEL") ?? "http://localhost:8081/#/order?error=true"
     

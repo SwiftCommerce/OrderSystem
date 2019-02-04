@@ -6,10 +6,10 @@ struct ProductManager: ServiceType {
     }
     
     let container: Container
-    let uri: String = Environment.get("PRODUCT_API") ?? "http://localhost:8080/v1/products"
     
     func product(for id: Item.ProductID) -> Future<Product> {
         do {
+            let uri = try self.container.make(OrderService.self).productService
             return try self.container.client().get(uri + "/" + String(describing: id)).flatMap { response in
                 return try response.content.decode(Product.self)
             }
