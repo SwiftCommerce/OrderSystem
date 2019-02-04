@@ -9,8 +9,8 @@ final class OrderService: ServiceType {
     let productService: String? = nil
     
     let paypalPayeeEmail: String? = "dispute@skelpo.com"
-    let paypalRedirectApprove: String? = "http://www.skelpo.codes/PayPal"
-    let paypalRedirectCancel: String? = "http://www.skelpo.codes/PayPal"
+    let paypalRedirectApprove: String? = Environment.get("PAYPAL_REDIRECT_APPROVE") ?? "http://localhost:8081/#/order?loading=true"
+    let paypalRedirectCancel: String? = Environment.get("PAYPAL_REDIRECT_CANCEL") ?? "http://localhost:8081/#/order?error=true"
     
     /// The ID of the address where the orders will be shipped from.
     /// This is used for calculating taxes using TaxJar if you have it integrated.
