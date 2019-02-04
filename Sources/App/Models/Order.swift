@@ -84,6 +84,7 @@ extension Order: Respondable {
         var paidTotal, refundedTotal: Int
         var guest: Bool
         var items: [Item.OrderResponse]
+        var payment: Payment?
         var shippingAddress: Address.Response?
         var billingAddress: Address.Response?
     }
@@ -116,15 +117,17 @@ extension Order: Respondable {
             
             return try map(
                 self.items(with: conn),
+                Payment.query(on: conn).filter(\.orderID == self.requireID()).first(),
                 Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
                 Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
-            ) { items, shipping, billing in
+            ) { items, payment, shipping, billing in
                 let email = self.email?.hasSuffix("ordersystem.example.com") ?? false ? nil : self.email
                 return Result(
-                    id: self.id, userID: self.userID, comment: self.comment, authToken: token,
-                    firstname: self.firstname, lastname: self.lastname, company: self.company, email: email, phone: self.phone, status: self.status,
+                    id: self.id, userID: self.userID, comment: self.comment, authToken: token, firstname: self.firstname,
+                    lastname: self.lastname, company: self.company, email: email, phone: self.phone, status: self.status,
                     paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, guest: self.guest,
-                    items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
+                    items: items.map { item in item.orderResponse }, payment: payment, shippingAddress: shipping?.response,
+                    billingAddress: billing?.response
                 )
             }
         }
