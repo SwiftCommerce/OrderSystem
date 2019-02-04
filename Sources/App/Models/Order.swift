@@ -96,14 +96,10 @@ extension Order: Respondable {
         } else {
             do {
                 let signer = try container.make(JWTService.self)
-                guard let email = self.email else {
-                    throw Abort(.internalServerError, reason: "Failed to create unique ID email for payment token")
-                }
-                
                 let user = User(
                     exp: Date.distantFuture.timeIntervalSince1970,
                     iat: Date().timeIntervalSince1970,
-                    email: email,
+                    email: self.email ?? "guest" + UUID().uuidString + "@ordersystem.example.com",
                     id: nil,
                     status: .standard
                 )
@@ -121,10 +117,9 @@ extension Order: Respondable {
                 Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
                 Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
             ) { items, payment, shipping, billing in
-                let email = self.email?.hasSuffix("ordersystem.example.com") ?? false ? nil : self.email
                 return Result(
                     id: self.id, userID: self.userID, comment: self.comment, authToken: token, firstname: self.firstname,
-                    lastname: self.lastname, company: self.company, email: email, phone: self.phone, status: self.status,
+                    lastname: self.lastname, company: self.company, email: self.email, phone: self.phone, status: self.status,
                     paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, guest: self.guest,
                     items: items.map { item in item.orderResponse }, payment: payment, shippingAddress: shipping?.response,
                     billingAddress: billing?.response

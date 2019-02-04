@@ -21,8 +21,6 @@ final class OrderController: RouteCollection {
         content.populate(order: order)
         
         let user: User?
-        let email: String
-        
         if let token = request.http.headers.bearerAuthorization?.token {
             let data = Data(token.utf8)
             let jwt = try JWT<User>(unverifiedFrom: data)
@@ -35,15 +33,8 @@ final class OrderController: RouteCollection {
             user = nil
         }
         
-        if let userEmail = user?.email {
-            email = userEmail
-        } else {
-            let prefix = order.guest ? "guest" : "user"
-            email = prefix + UUID().uuidString + "@ordersystem.example.com"
-        }
-        
         order.userID = user?.id
-        order.email = email
+        order.email = user?.email
         let saved = order.save(on: request)
 
         return saved.flatMap { order -> Future<Order> in
