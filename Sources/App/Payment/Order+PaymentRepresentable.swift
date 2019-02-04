@@ -11,11 +11,6 @@ extension Order.Payment {
 }
 
 extension Order {
-    func setTotal(to value: Int, on conn: DatabaseConnectable) -> Future<Order> {
-        self.total = value
-        return self.update(on: conn)
-    }
-    
     func itemTotal(on container: Container, with connection: DatabaseConnectable, currency: String) -> Future<Int> {
         return self.items(with: connection).flatMap { items -> Future<([Product], [Item])> in
             return container.products(for: items.map { $0.productID }).and(result: items)
@@ -70,7 +65,7 @@ extension Order: PaymentRepresentable {
                 payment.insurence = content.insurence
                 payment.giftWrap = content.giftWrap
                 
-                return self.setTotal(to: total, on: connection).transform(to: connection).flatMap(payment.create)
+                return payment.create(on: connection)
             }
         }
     }

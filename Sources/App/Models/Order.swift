@@ -11,7 +11,6 @@ final class Order: Content, MySQLModel, Migration, Parameter {
 
     var status: Order.Status
     var paymentStatus: Order.PaymentStatus
-    var total: Int?
     var paidTotal: Int
     var refundedTotal: Int
 
@@ -78,7 +77,7 @@ extension Order {
 
 extension Order: Respondable {    
     struct Result: Vapor.Content {
-        var id, userID, total, tax: Int?
+        var id, userID: Int?
         var comment, authToken, firstname, lastname, company, email, phone: String?
         var status: Order.Status
         var paymentStatus: Order.PaymentStatus
@@ -114,27 +113,15 @@ extension Order: Respondable {
         }
 
         return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Order.Result> in
-            let currency: Future<String?> = (container as? Request)?.content[String.self, at: "currency"] ?? container.future(nil)
-            
-            let costs = currency.flatMap { cur -> Future<(total: Int?, tax: Int?)> in
-                if let currency = cur {
-                    let total = self.total.map(container.future) ?? self.calculateTotal(on: container, currency: currency)
-                    let tax = self.tax(on: container, currency: currency).map { tax in NSDecimalNumber(decimal: tax.total).intValue }
-                    return map(total, tax) { ($0, $1) }
-                } else {
-                    return container.future((self.total, nil))
-                }
-            }
             
             return try map(
-                costs,
                 self.items(with: conn),
                 Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == true).first(),
                 Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
-            ) { costs, items, shipping, billing in
+            ) { items, shipping, billing in
                 let email = self.email?.hasSuffix("ordersystem.example.com") ?? false ? nil : self.email
                 return Result(
-                    id: self.id, userID: self.userID, total: costs.total, tax: costs.tax, comment: self.comment, authToken: token,
+                    id: self.id, userID: self.userID, comment: self.comment, authToken: token,
                     firstname: self.firstname, lastname: self.lastname, company: self.company, email: email, phone: self.phone, status: self.status,
                     paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, guest: self.guest,
                     items: items.map { item in item.orderResponse }, shippingAddress: shipping?.response, billingAddress: billing?.response
