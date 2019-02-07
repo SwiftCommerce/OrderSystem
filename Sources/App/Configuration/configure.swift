@@ -26,6 +26,7 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     
     try services.register(StripeProvider())
     try services.register(PayPalProvider(id: paypalID, secret: paypalSecret))
+    services.register(factory: CashPayment.init)
 
     
     /// Register routes to the router
