@@ -1,6 +1,6 @@
 import FluentMySQL
 
-func databases(config: inout DatabasesConfig)throws {
+func databases(config: inout DatabasesConfig, for env: Environment)throws {
     
     // Register the configured MySQL database to the database config.
     
@@ -12,6 +12,13 @@ func databases(config: inout DatabasesConfig)throws {
     let name = Environment.get("DATABASE_DB") ?? "order_system"
     let port = 3306
     
-    let mysqlConfig = MySQLDatabaseConfig(hostname: host, port: port, username: username, password: password, database: name)
+    let mysqlConfig = MySQLDatabaseConfig(
+        hostname: host,
+        port: port,
+        username: username,
+        password: password,
+        database: name,
+        transport: env.isRelease ? .cleartext : .unverifiedTLS
+    )
     config.add(database: MySQLDatabase(config: mysqlConfig), as: .mysql)
 }

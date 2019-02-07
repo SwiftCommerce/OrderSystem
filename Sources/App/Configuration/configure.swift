@@ -46,7 +46,7 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
 
 
     var databaseConfig = DatabasesConfig()
-    try databases(config: &databaseConfig)
+    try databases(config: &databaseConfig, for: env)
     services.register(databaseConfig)
 
     
