@@ -1,6 +1,8 @@
 import XCTest
 @testable import App
 
+infix operator +
+
 final class CombinableTests: XCTestCase {
     func testCombineSomeSome() {
         let a: Int? = 1
