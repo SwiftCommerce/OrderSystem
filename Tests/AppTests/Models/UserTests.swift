@@ -14,7 +14,17 @@ final class UserTests: XCTestCase {
         } catch { /* Success */ }
     }
     
+    func testExpireClaimSuccess()throws {
+        let iat = Date().timeIntervalSince1970
+        let exp = Date(timeInterval: 3600, since: Date()).timeIntervalSince1970
+        let user = User(exp: exp, iat: iat, email: "guest@example.com", id: -1, status: .admin)
+        
+        let signer = JWTSigner.hs256(key: "weak-key")
+        try XCTAssertNoThrow(user.verify(using: signer))
+    }
+    
     static let allTests: [(String, (UserTests) -> ()throws -> ())] = [
-        ("testExpireClaimFail", testExpireClaimFail)
+        ("testExpireClaimFail", testExpireClaimFail),
+        ("testExpireClaimSuccess", testExpireClaimSuccess)
     ]
 }
