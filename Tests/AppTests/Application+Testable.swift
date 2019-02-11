@@ -19,6 +19,10 @@ struct AnyError: Error {
     init(_ error: Error) {
         self.underlyingError = error
     }
+    
+    var localizedDescription: String {
+        return self.underlyingError.localizedDescription
+    }
 }
 
 extension Application {
