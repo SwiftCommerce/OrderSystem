@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/vapor/database-kit.git",
         "state": {
           "branch": null,
-          "revision": "3557894af50914e134803a684b42a9ea6eefaea2",
-          "version": "1.3.2"
+          "revision": "8f352c8e66dab301ab9bfef912a01ce1361ba1e4",
+          "version": "1.3.3"
         }
       },
       {
@@ -96,8 +96,8 @@
         "repositoryURL": "https://github.com/vapor/http.git",
         "state": {
           "branch": null,
-          "revision": "4c8c655932fdb409c11549eadabf27d3d61bc24c",
-          "version": "3.1.7"
+          "revision": "b57005e0de30ba36372ac41bfce1ac12b2bc3272",
+          "version": "3.1.8"
         }
       },
       {
@@ -159,8 +159,8 @@
         "repositoryURL": "https://github.com/vapor/mysql.git",
         "state": {
           "branch": null,
-          "revision": "ac94ebc248b898469be7b97d04a7e712cd22619b",
-          "version": "3.1.2"
+          "revision": "70f65efa57f21392e3d48c1bf6f5bbaf24f3f2f5",
+          "version": "3.1.3"
         }
       },
       {
@@ -186,8 +186,8 @@
         "repositoryURL": "https://github.com/vapor/service.git",
         "state": {
           "branch": null,
-          "revision": "281a70b69783891900be31a9e70051b6fe19e146",
-          "version": "1.0.0"
+          "revision": "4907311d7d7f609365982fa302b8b17ffdeb46da",
+          "version": "1.0.1"
         }
       },
       {
@@ -213,8 +213,8 @@
         "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
           "branch": null,
-          "revision": "03c541a24dd0558c942b15d8464eb75d70a921c4",
-          "version": "1.12.1"
+          "revision": "98434c1f1d687ff5a24d2cabfbd19b5c7d2d7a2f",
+          "version": "1.13.0"
         }
       },
       {
@@ -276,8 +276,8 @@
         "repositoryURL": "https://github.com/skelpo/Transaction.git",
         "state": {
           "branch": null,
-          "revision": "3d035e0f7f7777244eb973e7089ac4f840af3ecc",
-          "version": "0.6.0"
+          "revision": "ee1270fa51910e811eda2bb4203bed65bc28bd23",
+          "version": "0.6.1"
         }
       },
       {
@@ -285,8 +285,8 @@
         "repositoryURL": "https://github.com/skelpo/TransactionPayPal.git",
         "state": {
           "branch": null,
-          "revision": "e3df137d46f0a04e30da0a4ee9c7730e5b59c9e5",
-          "version": "0.2.0"
+          "revision": "3bebbda4038de28ae2e955c9d06556589b9540f6",
+          "version": "0.2.1"
         }
       },
       {
@@ -321,8 +321,8 @@
         "repositoryURL": "https://github.com/vapor/vapor.git",
         "state": {
           "branch": null,
-          "revision": "54cbf396147aba77ecb32e7fc75a3d13251551b1",
-          "version": "3.1.1"
+          "revision": "26d68063358fe73a37df371ebb6edf93e6f0c3ad",
+          "version": "3.1.3"
         }
       },
       {
