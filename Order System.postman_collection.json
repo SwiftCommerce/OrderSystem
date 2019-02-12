@@ -1079,14 +1079,14 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"pm.test(\"`success` is true\", function () {",
+									"pm.test(\"`paymentMethod` is 'cash'\", function () {",
 									"    var json = pm.response.json();",
-									"    pm.expect(json.success).to.eql(true);",
+									"    pm.expect(json.paymentMethod).to.eql('cash');",
 									"});",
 									"",
-									"pm.test(\"`message` is 'Success'\", function () {",
+									"pm.test(\"`orderID` matches environment variable\", function () {",
 									"    var json = pm.response.json();",
-									"    pm.expect(json.message).to.eql('Success');",
+									"    pm.expect(json.orderID).to.eql(pm.environment.get('order'));",
 									"});",
 									"",
 									""
@@ -1136,7 +1136,64 @@
 						},
 						"description": "Creates a `Payment` object for an `Order` without interacting with an third-part payment provider. This can be used when tangible money is manually transfered from the customer to the seller."
 					},
-					"response": []
+					"response": [
+						{
+							"name": "Execute Cash Payment for Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"currency\": \"usd\",\n\t\"shipping\": 3000,\n\t\"shippingDiscount\": 1200,\n\t\"handling\": 1500,\n\t\"insurence\": 2000,\n\t\"giftWrap\": 250\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8082/v1/orders/{{order}}/payment/cash",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"v1",
+										"orders",
+										"{{order}}",
+										"payment",
+										"cash"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "196"
+								},
+								{
+									"key": "date",
+									"value": "Tue, 12 Feb 2019 15:55:55 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"insurence\": 2000,\n    \"id\": 2,\n    \"giftWrap\": 250,\n    \"tax\": 253,\n    \"orderID\": 7,\n    \"paymentMethod\": \"cash\",\n    \"shipping\": 3000,\n    \"handling\": 1500,\n    \"subtotal\": 3500,\n    \"refunded\": 0,\n    \"shippingDiscount\": 1200,\n    \"currency\": \"usd\",\n    \"paid\": 0\n}"
+						}
+					]
 				}
 			],
 			"description": "Payments can be made for an `Order` resource using any one of the configured third-party payment providers. By default these are PayPal and Stripe.\n\nDepending on the provider you use, you will have to follow different steps to create and execute the remote payment. For some, you call the `create` endpoint, and when that succeeded, you call `execute`. For others, you create the payment from the client and when that succeeds, you execute it. This is done when you need to pass credit card information to the provider and want to avoid it going through your server. This helps your app to remain [PCI complient](https://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard).\n\n### PayPal\n\nPayPal payments are made in two steps. First you create the payment, then you execute it.\n\nAfter you create an `Order`, you can call the [`POST /orders/:order/payment/paypal/create`]() route which will both create the payment with PayPal and an internal `Payment` instance. Once the payment is created, you can execute it with the [`POST /orders/:order/payment/paypal/execute`]() route.\n\n### Stripe\n\nWhile you could say a Stripe payment is create with two steps, it only requires one on your service. First you need to create the payment with Stripe from your front-end. You can follow their [quickstart guide](https://stripe.com/docs/quickstart) to do that. You will want to set the credit card form’s action to the [`POST /orders/:order/payment/stripe-cc`]() route and make sure the form data sends the required payment information in the request’s body.\n\nYou should end up with the form submission sending the Stripe credit card token, plus additional payment data, to your order service.\n\n- Note: All currency amounts are done in the currency's smallest format possible, so if an items's price is `$5.50` USD, you would pass in `550`.",
@@ -1280,7 +1337,7 @@
 	],
 	"variable": [
 		{
-			"id": "60a77bfc-d160-4fbe-b67b-3d86a02f4320",
+			"id": "8bc99adb-b850-4e46-80d9-65eb77ae18eb",
 			"key": "JWT_TOKEN",
 			"value": "REPLACE_ME",
 			"type": "string"
