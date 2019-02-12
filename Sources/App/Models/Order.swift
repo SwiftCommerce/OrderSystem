@@ -78,6 +78,7 @@ extension Order {
 extension Order: Respondable {    
     struct Result: Vapor.Content {
         var id, userID: Int?
+        var createdAt, updatedAt: Date?
         var comment, authToken, firstname, lastname, company, email, phone: String?
         var status: Order.Status
         var paymentStatus: Order.PaymentStatus
@@ -118,11 +119,11 @@ extension Order: Respondable {
                 Address.query(on: conn).filter(\.orderID == self.requireID()).filter(\.shipping == false).first()
             ) { items, payment, shipping, billing in
                 return Result(
-                    id: self.id, userID: self.userID, comment: self.comment, authToken: token, firstname: self.firstname,
-                    lastname: self.lastname, company: self.company, email: self.email, phone: self.phone, status: self.status,
-                    paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal, guest: self.guest,
-                    items: items.map { item in item.orderResponse }, payment: payment, shippingAddress: shipping?.response,
-                    billingAddress: billing?.response
+                    id: self.id, userID: self.userID, createdAt: self.createdAt, updatedAt: self.updatedAt, comment: self.comment,
+                    authToken: token, firstname: self.firstname, lastname: self.lastname, company: self.company, email: self.email,
+                    phone: self.phone, status: self.status, paymentStatus: self.paymentStatus, paidTotal: self.paidTotal,
+                    refundedTotal: self.refundedTotal, guest: self.guest, items: items.map { item in item.orderResponse },
+                    payment: payment, shippingAddress: shipping?.response, billingAddress: billing?.response
                 )
             }
         }
