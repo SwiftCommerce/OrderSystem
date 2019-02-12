@@ -26,7 +26,7 @@ struct AnyError: Error {
 }
 
 extension Application {
-    static func testable(env: Environment = .development) -> Result<Application, AnyError> {
+    static func testable(env: Environment = .testing) -> Result<Application, AnyError> {
         var services = Services.default()
         var config = Config.default()
         var env = env
