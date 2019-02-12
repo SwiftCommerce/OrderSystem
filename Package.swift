@@ -1,19 +1,33 @@
 // swift-tools-version:4.0
+
 import PackageDescription
 
 let package = Package(
     name: "OrderSystem",
     dependencies: [
-        // 💧 A server-side Swift web framework.
+        .package(url: "https://github.com/skelpo/ModelResponse.git", from: "0.1.0"),
+        .package(url: "https://github.com/skelpo/TaxCalculator.git", from: "0.1.0"),
+        .package(url: "https://github.com/skelpo/Transaction.git", from: "0.5.0"),
+        .package(url: "https://github.com/skelpo/TransactionStripe.git", from: "0.2.1"),
+        .package(url: "https://github.com/skelpo/TransactionPayPal.git", from: "0.1.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
-
-        // 🔵 Swift ORM (queries, models, relations, etc) built on SQLite 3.
-        .package(url: "https://github.com/vapor/fluent-sqlite.git", from: "3.0.0-rc.2")
+        .package(url: "https://github.com/vapor/fluent-mysql.git", from: "3.0.0"),
+        .package(url: "https://github.com/skelpo/JWTMiddleware.git", from: "0.6.1"),
+        .package(url: "https://github.com/vapor-community/stripe-provider.git", from: "2.2.0")
     ],
     targets: [
-        .target(name: "App", dependencies: ["FluentSQLite", "Vapor"]),
+        .target(name: "App", dependencies: [
+            "Vapor",
+            "FluentMySQL",
+            "JWTMiddleware",
+            "Stripe",
+            "Transaction",
+            "TransactionStripe",
+            "TransactionPayPal",
+            "TaxCalculator",
+            "ModelResponse"
+        ]),
         .target(name: "Run", dependencies: ["App"]),
         .testTarget(name: "AppTests", dependencies: ["App"])
     ]
 )
-
