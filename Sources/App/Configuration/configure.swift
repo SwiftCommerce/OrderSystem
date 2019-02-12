@@ -7,8 +7,6 @@ import Vapor
 import Stripe
 import PayPal
 
-let payload = "skelpo-payload"
-
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
     guard let paypalID = Environment.get("PAYPAL_CLIENT_ID"), let paypalSecret = Environment.get("PAYPAL_CLIENT_SECRET") else {
