@@ -1,7 +1,7 @@
 import Vapor
 
 /// Register your application's routes here.
-public func routes(_ router: Router) throws {
+public func routes(_ router: Router, container: Container) throws {
     router.get(any, "orders", "health") { (request) in
         return "All Good!"
     }
