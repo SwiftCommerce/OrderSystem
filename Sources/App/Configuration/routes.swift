@@ -5,5 +5,9 @@ public func routes(_ router: Router, container: Container) throws {
     router.get(any, "orders", "health") { (request) in
         return "All Good!"
     }
-    try router.register(collection: VersionedCollection())
+    
+    
+    let base = router.grouped(any)
+    try base.register(collection: AccountSettingController())
+    try base.register(collection: OrderController(addresses: container.make()))
 }
