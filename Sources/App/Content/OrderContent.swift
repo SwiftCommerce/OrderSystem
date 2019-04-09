@@ -11,7 +11,7 @@ struct OrderContent: Content {
     var lastname: String?
     var company: String?
     var phone: String?
-    var addresses: OrderAddress?
+    var addresses: Order.Address?
     var items: [ItemContent]?
     
     func populate(order: Order) {

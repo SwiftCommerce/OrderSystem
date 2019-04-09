@@ -34,7 +34,10 @@ extension Order: PayPalPaymentRepresentable {
         let products = items.flatMap { self.products(on: container, for: $0, currency: currency.rawValue) }
         
         return flatMap(self.tax(on: container, currency: currency.rawValue), items, products) { tax, items, products -> Future<PayPal.Payment> in
-            return self.items(on: conn, order: id, items: items, currency: currency, tax: tax, products: products).map { list in
+            let itemList = self.items(
+                on: conn, with: container, order: id, items: items, currency: currency, tax: tax, products: products
+            )
+            return itemList.map { list in
                 let tax = NSDecimalNumber(decimal: tax.total).intValue
                 let subtotal = items.compactMap { item -> Int? in
                     guard let id = item.id, let price = products[id]?.price.cents else { return nil }
@@ -49,11 +52,11 @@ extension Order: PayPalPaymentRepresentable {
         }
     }
     
-    func address(on conn: DatabaseConnectable, order id: Order.ID) -> Future<PayPal.Address?> {
-        return Address.query(on: conn).filter(\.orderID == id).filter(\.shipping == true).first().map { address in
+    func address(on conn: DatabaseConnectable, with container: Container, order id: Order.ID) -> Future<PayPal.Address?> {
+        return App.Address.get(for: id, purpose: .shipping, on: container).map { address in
             guard
-                let street = address?.street, let city = address?.city,
-                let country = Country(rawValue: address?.country ?? "nil"), let zip = address?.zip
+                let street = address?.line1, let city = address?.city,
+                let country = Country(rawValue: address?.country ?? "nil"), let zip = address?.postalArea
             else { return nil }
             
             let recipient = self.firstname + self.lastname
@@ -61,9 +64,9 @@ extension Order: PayPalPaymentRepresentable {
                 recipientName: recipient,
                 defaultAddress: false,
                 line1: street,
-                line2: address?.street2,
+                line2: address?.line2,
                 city: city,
-                state: Province(rawValue: address?.state ?? "nil"),
+                state: Province(rawValue: address?.district ?? "nil"),
                 country: country,
                 postalCode: zip,
                 phone: self.phone,
@@ -87,9 +90,10 @@ extension Order: PayPalPaymentRepresentable {
     }
     
     func items(
-        on conn: DatabaseConnectable, order id: Order.ID, items: [Item], currency: Currency, tax: TaxCalculator.Result, products: Product.List
+        on conn: DatabaseConnectable, with container: Container, order id: Order.ID, items: [Item], currency: Currency,
+        tax: TaxCalculator.Result, products: Product.List
     ) -> Future<PayPal.Payment.ItemList> {
-        return self.address(on: conn, order: id).map { address in
+        return self.address(on: conn, with: container, order: id).map { address in
             let listItems = try items.compactMap { item -> PayPal.Payment.Item? in
                 guard let id = item.id, let (product, price) = products[id], let itemTax = tax.items[id.description] else { return nil }
                 let tax = NSDecimalNumber(decimal: itemTax).intValue

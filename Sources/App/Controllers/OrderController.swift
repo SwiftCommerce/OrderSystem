@@ -3,6 +3,12 @@ import Fluent
 import Vapor
 
 final class OrderController: RouteCollection {
+    let addresses: AddressRepository
+    
+    init(addresses: AddressRepository) {
+        self.addresses = addresses
+    }
+    
     func boot(router: Router) throws {
         let orders = router.grouped("orders")
         let protected = orders.grouped(JWTStorageMiddleware<User>())
@@ -40,7 +46,7 @@ final class OrderController: RouteCollection {
         return saved.flatMap { order -> Future<Order> in
             let id = try order.requireID()
             let items = (content.items ?? []).map { data in data.save(on: request, order: id) }.flatten(on: request)
-            let addresses = content.addresses?.save(on: request, order: id) ?? request.future()
+            let addresses = content.addresses?.save(with: self.addresses, on: request) ?? request.future()
             
             return items.and(addresses).transform(to: order)
         }.response(on: request)
