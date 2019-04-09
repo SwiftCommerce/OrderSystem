@@ -5,7 +5,7 @@ func databases(config: inout DatabasesConfig, for env: Environment)throws {
     // Register the configured MySQL database to the database config.
     
     // Attempt to get the DB information from the environment variables used by Vapor Cloud.
-    // If no value is found, default to the values used for lacal development.
+    // If no value is found, default to the values used for local development.
     let host = Environment.get("DATABASE_HOSTNAME") ?? "localhost"
     let username = Environment.get("DATABASE_USER") ?? "root"
     let password = Environment.get("DATABASE_PASSWORD") ?? "password"
