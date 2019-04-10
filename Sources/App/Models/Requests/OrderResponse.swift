@@ -14,8 +14,8 @@ extension Order: Respondable {
         var guest: Bool
         var items: [Item.OrderResponse]
         var payment: Payment?
-        var shippingAddress: Address?
-        var billingAddress: Address?
+        var shippingAddress: App.Address?
+        var billingAddress: App.Address?
     }
     
     func response(on container: Container) -> Future<Order.Result> {
@@ -39,21 +39,19 @@ extension Order: Respondable {
         }
         
         return container.databaseConnection(to: .mysql).flatMap { conn -> Future<Order.Result> in
-            
-            #warning("Get related addresses from address service")
             return try map(
                 self.items(with: conn),
-                Payment.query(on: conn).filter(\.orderID == self.requireID()).first()
-            ) { items, payment in
-                let shipping = try Address(json: nil)
-                let billing = try Address(json: nil)
-                
+                Payment.query(on: conn).filter(\.orderID == self.requireID()).first(),
+                App.Address.get(for: self.requireID(), purpose: .billing, on: container),
+                App.Address.get(for: self.requireID(), purpose: .shipping, on: container)
+            ) { (items, payment, billing, shipping) -> Result in
                 return Result(
-                    id: self.id, userID: self.userID, createdAt: self.createdAt, updatedAt: self.updatedAt, comment: self.comment,
-                    authToken: token, firstname: self.firstname, lastname: self.lastname, company: self.company, email: self.email,
-                    phone: self.phone, status: self.status, paymentStatus: self.paymentStatus, paidTotal: self.paidTotal,
-                    refundedTotal: self.refundedTotal, guest: self.guest, items: items.map { item in item.orderResponse },
-                    payment: payment, shippingAddress: shipping, billingAddress: billing
+                    id: self.id, userID: self.userID, createdAt: self.createdAt, updatedAt: self.updatedAt,
+                    comment: self.comment, authToken: token, firstname: self.firstname, lastname: self.lastname,
+                    company: self.company, email: self.email, phone: self.phone, status: self.status,
+                    paymentStatus: self.paymentStatus, paidTotal: self.paidTotal, refundedTotal: self.refundedTotal,
+                    guest: self.guest, items: items.map { item in item.orderResponse }, payment: payment,
+                    shippingAddress: shipping, billingAddress: billing
                 )
             }
         }
