@@ -7,7 +7,7 @@ struct Product: Content {
     let description: String?
     let prices: [Price]?
     
-    func currenctPrice(for currency: String) -> Price? {
+    func currentPrice(for currency: String) -> Price? {
         guard self.prices != nil else { return nil }
         
         let now = Date()
