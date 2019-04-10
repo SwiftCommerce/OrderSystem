@@ -1,5 +1,6 @@
 import TaxCalculator
 import Vapor
+import MySQL
 
 struct TaxCalculator {
     typealias Calculator = GenericTaxCalculator
@@ -17,18 +18,16 @@ struct TaxCalculator {
         }.flatMap { items in
             let rate = try self.container.make(Calculator.self).percentage / 100
             
-            return self.container.products(for: items.map { $0.productID }).map { products in
-                let data = items.compactMap { item -> (Item, Product, String, Decimal)? in
-                    guard let product = products.first(where: { $0.id == item.productID }) else {
-                        return nil
-                    }
-                    return (item, product, input.currency, rate)
+            return try self.container.make(ProductRepository.self).get(products: items.map { $0.productID }).map { products in
+                let data = zip(products, items).compactMap { element -> (Item, Product, String, Decimal)? in
+                    guard let product = element.0 else { return nil }
+                    return (element.1, product, input.currency, rate)
                 }
-                
                 let items = try data.map(self.tax).reduce(into: [:]) { $0[$1.id] = $1.value }
                 let total = items.reduce(0) { result, cost in result + cost.value }
                 
                 return (total, items)
+                
             }
         }
     }

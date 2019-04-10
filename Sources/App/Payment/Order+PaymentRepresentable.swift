@@ -12,17 +12,14 @@ extension Order.Payment {
 
 extension Order {
     func itemTotal(on container: Container, with connection: DatabaseConnectable, currency: String) -> Future<Int> {
-        return self.items(with: connection).flatMap { items -> Future<([Product], [Item])> in
-            return container.products(for: items.map { $0.productID }).and(result: items)
-        }.flatMap { data -> Future<[Item]> in
-            let elements = data.1.compactMap { item -> (product: Product, item: Item)? in
-                guard let product = data.0.first(where: { $0.id == item.productID }) else {
-                    return nil
-                }
-                return (product, item)
-            }
-            
-            return elements.map { pair in pair.item.saveTotal(from: pair.product, for: currency, on: connection) }.flatten(on: container)
+        return self.items(with: connection).flatMap { items -> Future<Zip2Sequence<[Product?], [Item]>> in
+            let products = try container.make(ProductRepository.self).get(products: items.map { $0.productID })
+            return products.map { list in zip(list, items) }
+        }.flatMap { elements -> Future<[Item]> in
+            return elements.compactMap { pair -> EventLoopFuture<Item>? in
+                guard let product = pair.0 else { return nil }
+                return pair.1.saveTotal(from: product, for: currency, on: connection)
+            }.flatten(on: container)
         }.map { items -> Int in
             return items.reduce(into: 0) { total, item in
                 if let cost = item.paidTotal {

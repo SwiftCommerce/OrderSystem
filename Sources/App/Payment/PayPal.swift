@@ -76,16 +76,28 @@ extension Order: PayPalPaymentRepresentable {
     }
     
     func products(on container: Container, for items: [Item], currency: String) -> Future<Product.List> {
-        return container.products(for: items, reduceInto: [:]) { result, item, product in
-            let id = try item.requireID()
-            guard let price = product.currenctPrice(for: currency) else {
-                throw PayPalError(
-                    status: .failedDependency,
-                    identifier: "noPrice",
-                    reason: "No price found for product '\(product.sku)' with currency '\(currency)'"
-                )
+        let repository: ProductRepository
+        switch Swift.Result(catching: { try container.make(ProductRepository.self) }) {
+        case let .failure(error): return container.future(error: error)
+        case let .success(result): repository = result
+        }
+        
+        return repository.get(products: items.map { $0.productID }).map { list in zip(list, items) }.map { elements in
+            return try elements.reduce(into: [:]) { list, element in
+                guard let product = element.0 else { return }
+                let (_, item) = element
+                let id = try item.requireID()
+                
+                guard let price = product.currentPrice(for: currency) else {
+                    throw PayPalError(
+                        status: .failedDependency,
+                        identifier: "noPrice",
+                        reason: "No price found for product '\(product.sku)' with currency '\(currency)'"
+                    )
+                }
+                
+                list[id] = (product, price)
             }
-            result[id] = (product, price)
         }
     }
     

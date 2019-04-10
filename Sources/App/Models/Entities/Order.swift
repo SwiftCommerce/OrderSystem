@@ -39,11 +39,19 @@ final class Order: Content, MySQLModel, Migration, Parameter {
         return container.databaseConnection(to: .mysql).flatMap { conn in
             return self.items(with: conn)
         }.flatMap { items in
-            return container.products(for: items, reduceInto: 0) { total, item, product in
-                guard let price = product.prices?.filter({ $0.currency.lowercased() == currency.lowercased() && $0.active }).first else {
-                    throw Abort(.failedDependency, reason: "No price for product '\(product.sku)' with currency '\(currency)'")
+            return try container.make(ProductRepository.self).get(products: items.map { $0.productID }).map { products in
+                return try zip(products, items).reduce(0) { total, element in
+                    let (product, item) = element
+                    let prices = product?.prices?.filter({ $0.currency.lowercased() == currency.lowercased() && $0.active })
+                    guard let price = prices?.first else {
+                        throw Abort(
+                            .failedDependency,
+                            reason: "No price for product '\(product?.sku ?? "null")' with currency '\(currency)'"
+                        )
+                    }
+                    
+                    return total + item.total(for: price.cents)
                 }
-                total += item.total(for: price.cents)
             }
         }
     }

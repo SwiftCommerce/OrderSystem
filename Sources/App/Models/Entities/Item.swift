@@ -25,7 +25,7 @@ final class Item: Content, MySQLModel, Migration {
     func total(for price: Int) -> Int { return price * quantity }
     
     func saveTotal(from product: Product, for currency: String, on conn: DatabaseConnectable) -> Future<Item> {
-        if let price = product.currenctPrice(for: currency) {
+        if let price = product.currentPrice(for: currency) {
             self.paidTotal = price.cents
             return self.update(on: conn)
         } else {
