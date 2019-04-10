@@ -26,7 +26,7 @@ final class SCProductRepository: ProductRepository {
             default: throw Abort(.failedDependency, reason: "Got status `\(response.http.status)` from product service")
             }
             
-            return try response.content.decode(Product.self).map { $0 }
+            return try response.content.decode(Product.self).map(Optional.init)
         }
     }
     
