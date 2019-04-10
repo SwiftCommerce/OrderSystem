@@ -69,7 +69,6 @@ public func configure(_ config: inout Config, _ env: inout Vapor.Environment, _ 
     services.register(controllers)
     
     services.register(OrderService.self)
-    services.register(ProductManager.self)
     
     services.register(Storage())
     services.register(PayPalPayment.self)
