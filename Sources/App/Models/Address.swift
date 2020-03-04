@@ -26,10 +26,13 @@ final class Address {
     }
 }
 
+extension Address: MySQLModel {
+    typealias Database = MySQLDatabase
+}
+
 extension Address: Content {}
 extension Address: Parameter {}
 extension Address: Migration {}
-extension Address: MySQLModel {}
 
 extension Address {
     struct Response: Content {

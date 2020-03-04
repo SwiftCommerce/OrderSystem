@@ -43,6 +43,9 @@ extension Order.Payment: Migration {
     }
 }
 
+extension Order.Payment: MySQLModel {
+    typealias Database = MySQLDatabase
+}
+
 extension Order.Payment: Content {}
 extension Order.Payment: Parameter {}
-extension Order.Payment: MySQLModel {}

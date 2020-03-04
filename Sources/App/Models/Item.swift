@@ -3,6 +3,7 @@ import FluentMySQL
 import Vapor
 
 final class Item: Content, MySQLModel, Migration {
+    typealias Database = MySQLDatabase
     typealias ProductID = Int
     
     var id: Int?

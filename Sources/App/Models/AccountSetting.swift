@@ -2,6 +2,8 @@ import FluentMySQL
 import Vapor
 
 final class AccountSetting: Content, MySQLModel, Migration, Parameter {
+    typealias Database = MySQLDatabase
+
     var id: Int?
     
     let accountID: Account.ID

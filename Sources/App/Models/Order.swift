@@ -2,8 +2,11 @@ import ModelResponse
 import FluentMySQL
 import JWTVapor
 import Vapor
+import Core
 
 final class Order: Content, MySQLModel, Migration, Parameter {
+    typealias Database = MySQLDatabase
+
     var id: Int?
     var createdAt: Date?
     var updatedAt: Date?

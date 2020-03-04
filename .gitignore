@@ -7,3 +7,4 @@ DerivedData/
 setup
 index.html
 keys.sh
+.swiftpm/

@@ -1,6 +1,7 @@
 import JWTMiddleware
 import Fluent
 import Vapor
+import Core
 
 final class AccountSettingController: RouteCollection {
     func boot(router: Router) throws {
